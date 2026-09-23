@@ -1,8 +1,10 @@
 export type Chapter = {
   n: string;
   id: string;
+  /** Participe passé : les six titres se lisent à la suite, comme une seule
+   *  phrase sur une seule pièce. C'est ce qui fait le lien entre les étapes. */
   title: string;
-  /** Une ligne, au constat. Pas d'argumentaire. */
+  /** Le bénéfice concret pour la personne qui achète, pas la description du geste. */
   line: string;
   /** Arc de luminosité : le site s'éclaircit jusqu'au studio, puis redescend. */
   tone: string;
@@ -14,12 +16,13 @@ export type Chapter = {
   hasStill: boolean;
 };
 
+/** Se lit comme la suite de « Chaque pièce est… ». */
 export const CHAPTERS: Chapter[] = [
   {
     n: '01',
     id: 'ch01-reception',
-    title: 'Réception',
-    line: 'Un ballot : 25 kg, environ 200 pièces.',
+    title: 'Triée à la main',
+    line: 'Une par une, à l’ouverture des cartons. Ce qui ne passe pas le tri ne part pas en vente.',
     tone: '#1a1a1a',
     fg: '#f1efe7',
     hasVideo: true,
@@ -28,8 +31,8 @@ export const CHAPTERS: Chapter[] = [
   {
     n: '02',
     id: 'ch02-lavage',
-    title: 'Lavage',
-    line: 'Tout passe en machine. Pièce à part, dans la grange.',
+    title: 'Lavée',
+    line: 'Toutes les pièces passent en machine. Vous recevez un vêtement propre, prêt à porter.',
     tone: '#222222',
     fg: '#f1efe7',
     hasVideo: true,
@@ -38,8 +41,8 @@ export const CHAPTERS: Chapter[] = [
   {
     n: '03',
     id: 'ch03-repassage',
-    title: 'Repassage',
-    line: 'Défroissé à la vapeur, une pièce à la fois.',
+    title: 'Défroissée à la vapeur',
+    line: 'La vapeur détend les fibres et assainit le tissu. Rien ne sort d’ici mal repassé.',
     tone: '#2e2e2c',
     fg: '#f1efe7',
     hasVideo: true,
@@ -48,8 +51,8 @@ export const CHAPTERS: Chapter[] = [
   {
     n: '04',
     id: 'ch04-prise-de-vue',
-    title: 'Prise de vue',
-    line: 'Fond blanc, mannequin, lumière continue.',
+    title: 'Photographiée',
+    line: 'Sur mannequin, en lumière continue, sans retouche. Vous voyez la pièce telle qu’elle est.',
     tone: '#f1efe7',
     fg: '#2b2b2b',
     hasVideo: true,
@@ -58,8 +61,8 @@ export const CHAPTERS: Chapter[] = [
   {
     n: '05',
     id: 'ch05-mise-en-ligne',
-    title: 'Mise en ligne',
-    line: 'Mesures, description, prix.',
+    title: 'Décrite sans filtre',
+    line: 'Taille, matière, état. Quand il y a un défaut, il est photographié et signalé.',
     tone: '#e3e0d6',
     fg: '#2b2b2b',
     hasVideo: true,
@@ -68,8 +71,8 @@ export const CHAPTERS: Chapter[] = [
   {
     n: '06',
     id: 'ch06-expedition',
-    title: 'Expédition',
-    line: 'Pesé, emballé, déposé au point relais.',
+    title: 'Expédiée sous 48 h',
+    line: 'Emballée et déposée en point relais, avec le suivi dès le départ.',
     tone: '#2b2b2b',
     fg: '#f1efe7',
     hasVideo: true,

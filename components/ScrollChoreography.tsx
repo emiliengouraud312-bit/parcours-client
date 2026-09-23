@@ -32,13 +32,31 @@ export default function ScrollChoreography() {
       root.style.setProperty('--fg-now', fg);
     };
 
+    const reveals = document.querySelectorAll<HTMLElement>('[data-reveal-section]');
+    const showAll = () => reveals.forEach((el) => el.setAttribute('data-reveal', 'on'));
+
     // Parcours alternatif : pas de dégradé, pas de sticky, aucune lecture.
     // Les affiches des clips restent affichées comme des photos.
     if (prefersReducedMotion()) {
       root.dataset.static = 'true';
       setTone(HERO_TONE, HERO_FG);
+      showAll();
       return;
     }
+
+    // Le masquage des sections de texte n'existe qu'à partir d'ici : si ce
+    // code ne tourne pas, elles restent visibles plutôt que de disparaître.
+    root.dataset.animReady = 'on';
+    const sectionIo = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          e.target.setAttribute('data-reveal', 'on');
+          sectionIo.unobserve(e.target);
+        }),
+      { rootMargin: '0px 0px -18% 0px' },
+    );
+    reveals.forEach((el) => sectionIo.observe(el));
 
     const lite = saveData();
     const videos: HTMLVideoElement[] = [];
@@ -149,7 +167,8 @@ export default function ScrollChoreography() {
               { yPercent: 108, duration: 0.85, ease: EASE.out },
               '-=0.34',
             )
-            .from(section.querySelector('[data-anim="line"]'), { opacity: 0, y: 16, duration: 0.6, ease: EASE.out }, '-=0.5');
+            .from(section.querySelector('[data-anim="line"]'), { opacity: 0, y: 16, duration: 0.6, ease: EASE.out }, '-=0.5')
+            .from(section.querySelector('[data-anim="next"]'), { opacity: 0, duration: 0.5, ease: 'power1.out' }, '-=0.25');
         }
 
         /* ---- Sortie ----------------------------------------------------
@@ -192,13 +211,27 @@ export default function ScrollChoreography() {
         }
       });
 
-      /* ---- Rail de progression --------------------------------------- */
-      const fill = document.querySelector<HTMLElement>('[data-rail-fill]');
+      /* ---- Rail de progression ---------------------------------------
+         Un segment par chapitre : la barre dit combien d'étapes il reste,
+         pas seulement où on en est. */
+      const segs = document.querySelectorAll<HTMLElement>('[data-rail-seg]');
       const num = document.querySelector<HTMLElement>('[data-rail-n]');
       const first = sections[0];
       const last = sections[sections.length - 1];
 
-      if (fill && num && first && last) {
+      if (first && last) {
+        // Le rail n'apparaît que sur la plage des chapitres.
+        ScrollTrigger.create({
+          trigger: first,
+          start: 'top 80%',
+          endTrigger: last,
+          end: 'bottom 40%',
+          onToggle: (self) => root.toggleAttribute('data-chapters', self.isActive),
+        });
+      }
+
+      if (segs.length && num && first && last) {
+        let shown = -1;
         ScrollTrigger.create({
           trigger: first,
           start: 'top center',
@@ -206,10 +239,11 @@ export default function ScrollChoreography() {
           end: 'bottom center',
           scrub: true,
           onUpdate: (self) => {
-            fill.style.transform = `scaleY(${self.progress})`;
             const i = Math.min(CHAPTERS.length - 1, Math.floor(self.progress * CHAPTERS.length));
-            const label = CHAPTERS[i].n;
-            if (num.textContent !== label) num.textContent = label;
+            if (i === shown) return;
+            shown = i;
+            segs.forEach((seg, k) => seg.toggleAttribute('data-on', k <= i));
+            num.textContent = CHAPTERS[i].n;
           },
         });
       }
@@ -226,6 +260,9 @@ export default function ScrollChoreography() {
 
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
+      sectionIo.disconnect();
+      delete root.dataset.animReady;
+      root.removeAttribute('data-chapters');
       ctx.revert();
     };
   }, []);

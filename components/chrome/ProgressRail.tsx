@@ -1,6 +1,9 @@
 import { CHAPTERS } from '@/components/chapters/chapters.data';
 
-/** Rail 1px + index du chapitre courant. Purement indicatif, jamais cliquable sur mobile. */
+/**
+ * Six segments plutôt qu'une barre continue : on voit qu'il y a six étapes
+ * et où on en est. Purement indicatif, jamais cliquable.
+ */
 export default function ProgressRail() {
   return (
     <div className="rail" data-rail aria-hidden="true">
@@ -8,7 +11,9 @@ export default function ProgressRail() {
         01
       </span>
       <span className="rail__track">
-        <span className="rail__fill" data-rail-fill />
+        {CHAPTERS.map((c, i) => (
+          <span key={c.id} className="rail__seg" data-rail-seg={i} />
+        ))}
       </span>
       <span className="rail__total">{String(CHAPTERS.length).padStart(2, '0')}</span>
     </div>

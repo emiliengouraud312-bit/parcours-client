@@ -1,16 +1,26 @@
 import type { Metadata, Viewport } from 'next';
-import { Archivo, Instrument_Serif } from 'next/font/google';
+import { Archivo, DM_Sans, Instrument_Serif, League_Spartan } from 'next/font/google';
 import './globals.css';
 
-/* Archivo couvre à elle seule le mot-symbole (wght 800) et les capitales
-   espacées de « VINTAGE » (wght 300) — exactement la construction du logo. */
+/* Archivo couvre le mot-symbole (wght 800) et les capitales espacées de
+   « VINTAGE » (wght 300) — exactement la construction du logo. Elle ne sert
+   qu'aux titres. */
 const archivo = Archivo({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '800'],
+  weight: ['300', '800'],
   variable: '--font-archivo',
   display: 'swap',
 });
 
+/* DM Sans porte tout le texte courant, les étiquettes et l'interface. */
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-dm',
+  display: 'swap',
+});
+
+/* Une ligne par chapitre, en italique : le contraste éditorial du site. */
 const instrument = Instrument_Serif({
   subsets: ['latin'],
   weight: '400',
@@ -19,16 +29,26 @@ const instrument = Instrument_Serif({
   display: 'swap',
 });
 
+/* Réservée à l'accroche du choix de taille, tout en bas de page : elle n'a
+   rien à faire dans le chemin critique du premier écran, d'où preload: false. */
+const spartan = League_Spartan({
+  subsets: ['latin'],
+  weight: ['700'],
+  variable: '--font-spartan',
+  display: 'swap',
+  preload: false,
+});
+
 const SITE = 'https://em-vintage.vercel.app';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: 'E&M Vintage — Du ballot au colis',
+  title: 'E&M Vintage — Vêtements de marque, seconde main',
   description:
-    'Ce qui se passe entre un ballot de 25 kg et le colis que vous recevez. Six étapes, puis les deux comptes Vinted.',
+    'Ralph Lauren, Tommy Hilfiger, Lacoste, Patagonia, The North Face. Des pièces triées, lavées, repassées et photographiées une par une, en Vendée.',
   openGraph: {
-    title: 'E&M Vintage — Du ballot au colis',
-    description: 'Six étapes, du ballot au colis.',
+    title: 'E&M Vintage — Vêtements de marque, seconde main',
+    description: 'Triées, lavées, repassées, photographiées une par une. En Vendée.',
     locale: 'fr_FR',
     type: 'website',
     url: SITE,
@@ -46,7 +66,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${archivo.variable} ${instrument.variable}`}>
+    <html
+      lang="fr"
+      className={`${archivo.variable} ${dmSans.variable} ${instrument.variable} ${spartan.variable}`}
+    >
       <body>
         <a className="u-skip" href="#final">
           Aller directement aux comptes Vinted

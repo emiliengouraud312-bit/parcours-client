@@ -1,48 +1,59 @@
 import type { Metadata } from 'next';
 import PageShell from '@/components/chrome/PageShell';
+import { BRANDS, LOCAL } from '@/content/site';
 
 export const metadata: Metadata = {
   title: 'À propos — E&M Vintage',
-  description: 'Qui trie, lave et expédie les pièces vendues sur les deux comptes Vinted.',
+  description:
+    'Quatre ans, un local de 100 m² en Vendée, 40 000 articles remis en circulation. Ralph Lauren, Tommy Hilfiger, Lacoste, Patagonia, The North Face.',
 };
 
 export default function Page() {
   return (
-    <PageShell title="À propos" intro="E&M Vintage, c'est deux personnes, un local et une grange.">
+    <PageShell
+      title="À propos"
+      intro="Tout a commencé dans nos chambres."
+    >
       <section className="page__section">
-        <h2 className="page__h2">L&apos;activité</h2>
         <p>
-          On achète des vêtements de seconde main au ballot — des balles compressées de 25 kg,
-          fermées, dont on ne connaît le contenu qu&apos;une fois ouvertes. Tout est trié à la main.
-          Ce qui ne passe pas le tri ne part pas en vente.
-        </p>
-        <p>
-          L&apos;essentiel de ce qu&apos;on remet en vente est de la pièce homme : polos, mailles,
-          chemises, vestes. Quelques pièces femme passent au tri et se retrouvent sur le second
-          compte.
+          Il y a 4 ans, on vendait quelques pièces à l&apos;unité, photographiées sur un coin de lit.
+          Aujourd&apos;hui, c&apos;est un local de {LOCAL.surface} en {LOCAL.area}, des cartons qui
+          arrivent chaque semaine et une petite équipe qui nous accompagne au quotidien. Le principe,
+          lui, n&apos;a pas changé : trouver de belles pièces et les remettre en circulation.
         </p>
       </section>
 
       <section className="page__section">
-        <h2 className="page__h2">Le local</h2>
+        <h2 className="page__h2">Notre local, notre terrain de jeu</h2>
         <p>
-          Une pièce unique, murs blancs, sol carrelé : c&apos;est là que se fait le tri, le
-          repassage, la prise de vue et l&apos;emballage. Un portant, des étagères, un fond blanc, un
-          mannequin et une lumière continue — rien de plus.
-        </p>
-        <p>
-          Le stockage et les machines à laver sont dans une pièce à part, dans la grange d&apos;à
-          côté. Les ballots y restent sur palette jusqu&apos;à l&apos;ouverture.
+          C&apos;est ici que tout se passe. Les ballots sont ouverts, les pièces triées une par une,
+          lavées, repassées, photographiées, puis emballées avant de partir chez vous. Rien n&apos;est
+          sous-traité : chaque article passe entre nos mains avant d&apos;arriver dans les vôtres.
         </p>
       </section>
 
       <section className="page__section">
-        <h2 className="page__h2">Deux comptes</h2>
+        <h2 className="page__h2">Des marques qu&apos;on connaît par cœur</h2>
         <p>
-          Les tailles XS à L sont sur <strong>mathisguerin</strong>. Les tailles XL et au-delà sont
-          sur <strong>vintage-imparfait</strong>, avec les quelques pièces femme. Deux comptes plutôt
-          qu&apos;un, simplement pour que chacun trouve sa taille sans faire défiler des centaines
-          d&apos;annonces qui ne lui vont pas.
+          {BRANDS.join(', ')}… On sélectionne des marques qui durent, et on vérifie chaque pièce avant
+          sa mise en vente. <strong>Nos articles sont 100 % authentiques. Pas d&apos;exception.</strong>
+        </p>
+      </section>
+
+      <section className="page__section">
+        <h2 className="page__h2">40 000 articles. 20 000 clients.</h2>
+        <p>
+          En 4 ans, nous avons reconditionné et vendu plus de 40 000 articles à plus de 20 000 clients.
+          Avec une note de 4,9/5, ce sont eux qui en parlent le mieux. Chaque avis compte, et c&apos;est
+          ce qui nous pousse à soigner chaque envoi comme le premier.
+        </p>
+      </section>
+
+      <section className="page__section">
+        <h2 className="page__h2">La seconde main, simplement</h2>
+        <p>
+          Des vêtements de qualité, déjà portés, à un prix juste. Pour nous, c&apos;est surtout du bon
+          sens.
         </p>
       </section>
     </PageShell>

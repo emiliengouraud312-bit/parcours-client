@@ -1,27 +1,32 @@
 import type { Metadata } from 'next';
 import PageShell from '@/components/chrome/PageShell';
+import { LOCAL } from '@/content/site';
 
 export const metadata: Metadata = {
   title: 'FAQ — E&M Vintage',
-  description: 'Lavage, tailles, défauts, expédition : les questions qui reviennent.',
+  description: 'Lavage, authenticité, défauts, expédition, vente sur place : les questions qui reviennent.',
 };
 
 const QA = [
   {
     q: 'Les vêtements sont-ils lavés avant la vente ?',
-    a: "Oui. Tout passe en machine avant d'être repassé et photographié. Rien n'est mis en ligne sans être passé par là.",
+    a: "Oui. Tout passe en machine avant d'être défroissé et photographié. Rien n'est mis en ligne sans être passé par là.",
+  },
+  {
+    q: 'Vos articles sont-ils authentiques ?',
+    a: "Oui, 100 %, sans exception. Chaque pièce est vérifiée avant sa mise en vente. Ce qui ne nous convainc pas ne part pas.",
   },
   {
     q: "D'où viennent les pièces ?",
-    a: 'De ballots de seconde main achetés au poids — des balles compressées de 25 kg, ouvertes et triées à la main, une par une.',
-  },
-  {
-    q: 'Comment savoir si la taille me va ?',
-    a: "Chaque annonce indique les mesures à plat : largeur d'épaules, poitrine, longueur. Les tailles d'époque ne correspondent pas aux tailles actuelles — fiez-vous aux mesures, pas à l'étiquette.",
+    a: 'De ballots de seconde main achetés au poids, ouverts et triés à la main, une par une.',
   },
   {
     q: 'Et les défauts ?',
-    a: "Quand une pièce a un défaut — un accroc, une tache, un col marqué — il est photographié et mentionné dans l'annonce. Une pièce trop abîmée ne part pas en vente.",
+    a: "Quand une pièce a un défaut — un accroc, une tache, un col marqué — il est photographié et signalé dans l'annonce. Une pièce trop abîmée ne part pas en vente.",
+  },
+  {
+    q: 'Peut-on venir acheter sur place ?',
+    a: `Oui. Notre local est à ${LOCAL.city}, en ${LOCAL.area}. Demandez-nous et on organise une vente directe : vous fouillez dans les portants sans passer par une annonce.`,
   },
   {
     q: 'Pourquoi deux comptes Vinted ?',
@@ -29,7 +34,7 @@ const QA = [
   },
   {
     q: 'Comment se passe une commande ?',
-    a: "Tout se fait sur Vinted : l'achat, le paiement et le suivi. Les colis partent sous 24 à 48 h ouvrées, déposés en point relais ou en locker.",
+    a: "Tout se fait sur Vinted : l'achat, le paiement et le suivi. Les colis partent sous 48 h, déposés en point relais.",
   },
   {
     q: 'Y a-t-il des pièces femme ?',

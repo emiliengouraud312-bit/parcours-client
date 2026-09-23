@@ -40,7 +40,7 @@ export default function FinalCta() {
   return (
     <section className="final" id="final" ref={ref} aria-labelledby="final-title">
       <div className="final__inner">
-        <p className="final__kicker u-serif">Voilà. Le reste est sur Vinted.</p>
+        <p className="final__kicker">Il y a sûrement votre taille.</p>
 
         <h2 className="final__title u-eyebrow" id="final-title">
           Choisissez votre taille
@@ -51,8 +51,8 @@ export default function FinalCta() {
         <div className="final__choice">
           {[VINTED.menSmall, VINTED.menLarge].map((acc) => (
             <a key={acc.handle} className="size-btn" href={acc.url} target="_blank" rel="noopener noreferrer">
-              <span className="size-btn__size">{acc.sizes}</span>
-              <span className="size-btn__handle">{acc.handle}</span>
+              <span className="size-btn__size u-display">{acc.sizes}</span>
+              <span className="size-btn__handle u-eyebrow">{acc.handle}</span>
             </a>
           ))}
         </div>

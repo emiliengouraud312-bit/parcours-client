@@ -8,7 +8,10 @@ const LINKS = [
   { href: '/contact', label: 'Contact' },
 ];
 
-/** Menu discret : hors du scroll principal, il ne doit jamais concurrencer le CTA. */
+/**
+ * Menu discret, mais jamais introuvable : trois traits plus l'étiquette, dans
+ * une zone tactile de 48 px. Il reste accessible dès le premier écran.
+ */
 export default function Menu() {
   const [open, setOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -30,12 +33,17 @@ export default function Menu() {
     <>
       <button
         type="button"
-        className="menu-btn u-eyebrow"
+        className="menu-btn"
         aria-expanded={open}
         aria-controls="menu-overlay"
         onClick={() => setOpen(true)}
       >
-        Menu
+        <span className="menu-btn__bars" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
+        <span className="menu-btn__label u-eyebrow">Menu</span>
       </button>
 
       <div id="menu-overlay" className="menu" data-open={open || undefined} aria-hidden={!open}>
@@ -46,7 +54,7 @@ export default function Menu() {
           <ul>
             {LINKS.map((l) => (
               <li key={l.href}>
-                <a href={l.href} tabIndex={open ? 0 : -1} onClick={() => setOpen(false)}>
+                <a className="u-display" href={l.href} tabIndex={open ? 0 : -1} onClick={() => setOpen(false)}>
                   {l.label}
                 </a>
               </li>

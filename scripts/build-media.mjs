@@ -55,7 +55,13 @@ const CLIPS = {
   '02': { id: 'ch02-lavage', start: 4.3, want: 3.6, loop: 'xfade' },
   // La vapeur est du bruit pur : c'est le clip le plus cher à encoder.
   // Il prend un réglage plus serré et une boucle plus courte.
-  '03': { id: 'ch03-repassage', start: 0.5, want: 4.4, loop: 'xfade', vp9: 46, h264: 34 },
+  // L'étiquette intérieure du col porte une marque inventée par le modèle.
+  // Les articles vendus sont authentiques : on ne laisse pas une étiquette
+  // fantaisiste laisser croire le contraire. Elle est donc floutée.
+  '03': {
+    id: 'ch03-repassage', start: 0.5, want: 4.4, loop: 'xfade', vp9: 46, h264: 34,
+    blur: { cx: 210, cy: 310, rx: 135, ry: 85, feather: 26, sigma: 26 },
+  },
   // Même chose qu'en 01 : les mains n'entrent dans le cadre qu'à 2 s.
   '04': { id: 'ch04-prise-de-vue', start: 1.9, want: 5.2, loop: 'xfade' },
   '05': { id: 'ch05-mise-en-ligne', start: 0.08, want: 5.2, loop: 'pingpong' },
@@ -70,6 +76,17 @@ const VP9 = 42;
 const H264 = 32;
 
 const ff = (args) => execFileSync(ffmpegPath, ['-y', '-hide_banner', '-loglevel', 'error', ...args], { stdio: 'pipe' });
+
+/**
+ * Masque d'alpha : une ellipse blanche très adoucie sur fond noir. Utilisé
+ * comme canal alpha d'une copie floutée du plan, il fond le flou dans l'image
+ * au lieu d'y poser un rectangle de censure.
+ */
+async function blurMask({ cx, cy, rx, ry, feather }, file) {
+  const svg = `<svg width="${VW}" height="${VH}"><rect width="${VW}" height="${VH}" fill="black"/>` +
+    `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="white"/></svg>`;
+  await sharp(Buffer.from(svg)).blur(feather).greyscale().png().toFile(file);
+}
 
 function durationOf(file) {
   const out = execFileSync(ffmpegPath, ['-hide_banner', '-i', file], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -126,17 +143,28 @@ async function clips(pick) {
     if (d <= 0.4) { console.log(`skip  ${file} (trop court : ${total}s)`); continue; }
 
     const x = clip.loop === 'xfade' ? Math.min(0.7, d / 4) : 0;
-    const filter = clip.loop === 'pingpong' ? pingpongLoop() : xfadeLoop(d, x);
+    let filter = clip.loop === 'pingpong' ? pingpongLoop() : xfadeLoop(d, x);
     const cut = ['-ss', String(start), '-t', String(d), '-i', src];
     const outLen = clip.loop === 'pingpong' ? d * 2 : d - x;
 
-    ff([...cut, '-filter_complex', filter, '-map', '[v]', '-an',
+    if (clip.blur) {
+      const mask = path.join(OUT, `video/.mask-${clip.id}.png`);
+      await blurMask(clip.blur, mask);
+      cut.push('-loop', '1', '-i', mask);
+      filter +=
+        `;[v]split=2[base][pre];[pre]gblur=sigma=${clip.blur.sigma}[bl];` +
+        `[1:v]format=gray,scale=${VW}:${VH}[m];[bl][m]alphamerge[bla];` +
+        `[base][bla]overlay=0:0:shortest=1[vout]`;
+    }
+    const outLabel = clip.blur ? '[vout]' : '[v]';
+
+    ff([...cut, '-filter_complex', filter, '-map', outLabel, '-an',
       '-c:v', 'libvpx-vp9', '-crf', String(clip.vp9 ?? VP9), '-b:v', '0', '-row-mt', '1',
       '-deadline', 'good', '-cpu-used', '2',
       '-auto-alt-ref', '1', '-lag-in-frames', '25', '-tile-columns', '1',
       path.join(OUT, `video/${clip.id}.webm`)]);
 
-    ff([...cut, '-filter_complex', filter, '-map', '[v]', '-an',
+    ff([...cut, '-filter_complex', filter, '-map', outLabel, '-an',
       '-c:v', 'libx264', '-crf', String(clip.h264 ?? H264), '-preset', 'slow', '-profile:v', 'main',
       '-movflags', '+faststart', '-pix_fmt', 'yuv420p',
       path.join(OUT, `video/${clip.id}.mp4`)]);
@@ -144,10 +172,21 @@ async function clips(pick) {
     // Poster = la toute première image du clip final, pour qu'aucune
     // bascule ne soit visible quand la lecture démarre.
     const frame = path.join(OUT, `video/${clip.id}.poster.png`);
-    ff(['-ss', String(start), '-i', src, '-vf', SCALE, '-frames:v', '1', frame]);
+    if (clip.blur) {
+      // L'affiche est la première image du clip : elle doit porter le même
+      // flou, sinon l'étiquette réapparaît le temps que la vidéo démarre.
+      const mask = path.join(OUT, `video/.mask-${clip.id}.png`);
+      ff(['-ss', String(start), '-i', src, '-loop', '1', '-i', mask, '-filter_complex',
+        `[0:v]${SCALE},split=2[base][pre];[pre]gblur=sigma=${clip.blur.sigma}[bl];` +
+        `[1:v]format=gray,scale=${VW}:${VH}[m];[bl][m]alphamerge[bla];[base][bla]overlay=0:0[p]`,
+        '-map', '[p]', '-frames:v', '1', frame]);
+    } else {
+      ff(['-ss', String(start), '-i', src, '-vf', SCALE, '-frames:v', '1', frame]);
+    }
     await sharp(frame).avif({ quality: 48, effort: 6 }).toFile(path.join(OUT, `img/${clip.id}-poster.avif`));
     await sharp(frame).webp({ quality: 70 }).toFile(path.join(OUT, `img/${clip.id}-poster.webp`));
     rmSync(frame, { force: true });
+    if (clip.blur) rmSync(path.join(OUT, `video/.mask-${clip.id}.png`), { force: true });
 
     const kb = (p) => Math.round(statSync(p).size / 1024);
     console.log(

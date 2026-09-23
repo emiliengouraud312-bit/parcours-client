@@ -31,7 +31,7 @@
 
 .masthead { left: var(--gutter); }
 .masthead__mark { display: flex; flex-direction: column; line-height: 1; }
-.masthead__em { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+.masthead__em { font-family: var(--font-archivo), sans-serif; font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
 .masthead__vintage {
   font-size: 7px;
   font-weight: 300;
@@ -42,14 +42,29 @@
   margin-top: 2px;
 }
 
-.menu-btn { right: var(--gutter); padding: 6px 2px; }
-.menu-btn::after {
-  content: '';
+.menu-btn {
+  right: calc(var(--gutter) - 10px);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 10px;
+}
+.menu-btn__bars { display: flex; flex-direction: column; gap: 4px; }
+.menu-btn__bars i {
   display: block;
-  height: 1px;
-  margin-top: 3px;
+  width: 22px;
+  height: 1.5px;
   background: currentColor;
-  opacity: 0.35;
+  transition: width 0.3s var(--e-out);
+}
+/* Le trait du milieu plus court : le bouton a une silhouette, pas juste
+   trois barres génériques. */
+.menu-btn__bars i:nth-child(2) { width: 14px; }
+.menu-btn__label { font-size: 10px; }
+
+@media (hover: hover) {
+  .menu-btn:hover .menu-btn__bars i:nth-child(2) { width: 22px; }
 }
 
 /* ---- Rail de progression --------------------------------------- */
@@ -68,35 +83,31 @@
   transition: opacity 0.5s var(--e-out);
   font-variant-numeric: tabular-nums;
 }
-:root[data-chrome='on'] .rail { opacity: 1; }
-:root[data-at-end] .rail { opacity: 0; }
+/* Le rail ne dit quelque chose que pendant les six chapitres : au-delà, il
+   se posait sur le texte des sections suivantes. */
+:root[data-chapters] .rail { opacity: 1; }
 :root[data-static] .rail { display: none; }
 
 .rail__n,
 .rail__total { font-size: 9px; font-weight: 500; letter-spacing: 0.16em; }
 .rail__total { opacity: 0.4; }
 
+/* Six segments : on voit d'un coup d'œil qu'il y a six étapes, et laquelle
+   est en cours. Une barre continue ne disait ni l'un ni l'autre. */
 .rail__track {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   width: 1px;
-  height: 20svh;
+  height: 22svh;
+}
+.rail__seg {
+  flex: 1;
   background: currentColor;
-  opacity: 0.9;
+  opacity: 0.2;
+  transition: opacity 0.35s var(--e-out), background-color 0.35s var(--e-out);
 }
-.rail__track::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: currentColor;
-  opacity: 0.22;
-}
-.rail__fill {
-  position: absolute;
-  inset: 0;
-  background: var(--indigo-300);
-  transform: scaleY(0);
-  transform-origin: top;
-}
+.rail__seg[data-on] { opacity: 1; background: var(--indigo-300); }
 
 /* ---- Hero ------------------------------------------------------ */
 
@@ -113,6 +124,7 @@
 .mark { display: flex; flex-direction: column; align-items: center; will-change: transform, opacity; }
 
 .mark__em {
+  font-family: var(--font-archivo), sans-serif;
   font-size: clamp(4.6rem, 27vw, 11rem);
   font-weight: 800;
   letter-spacing: -0.035em;
@@ -122,6 +134,7 @@
 }
 
 .mark__vintage {
+  font-family: var(--font-archivo), sans-serif;
   margin-top: clamp(10px, 3vw, 18px);
   font-size: clamp(0.66rem, 3.2vw, 1rem);
   font-weight: 300;
@@ -149,6 +162,23 @@
   animation: rise 0.8s var(--e-out) 1.32s forwards;
 }
 
+.hero__brands {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px 18px;
+  max-width: 21rem;
+  margin-top: clamp(20px, 6vw, 30px);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fade-in 0.9s ease 1.72s forwards;
+}
+.hero__brands li { opacity: 0.58; }
+
 .hero__hint {
   position: absolute;
   bottom: max(26px, env(safe-area-inset-bottom));
@@ -175,7 +205,10 @@
    Pas de pin GSAP : `sticky` ne se décale pas quand la barre d'adresse
    mobile se rétracte, un pin si.                                     */
 
-.chapter { position: relative; height: 180svh; color: var(--fg); }
+/* 130svh : le bloc reste figé environ un tiers d'écran, assez pour lire,
+   pas assez pour croire que le scroll est bloqué. À 180svh, la pause durait
+   presque deux écrans et passait pour un bug. */
+.chapter { position: relative; height: 130svh; color: var(--fg); }
 
 .chapter__sticky {
   position: sticky;
@@ -269,15 +302,40 @@
 
 .chapter__n { display: block; opacity: 0.55; margin-bottom: clamp(10px, 2.4vw, 16px); }
 
+/* Les titres sont des participes passés, parfois longs (« Défroissée à la
+   vapeur ») : la taille est calée sur le plus long, pas sur le plus court. */
 .chapter__title {
-  font-size: clamp(2.7rem, 13.5vw, 6rem);
-  font-weight: 800;
-  line-height: 0.95;
-  letter-spacing: -0.028em;
-  text-transform: uppercase;
+  font-size: clamp(1.95rem, 9.6vw, 4.6rem);
+  line-height: 0.98;
+  overflow-wrap: break-word;
 }
 .chapter__mask { display: block; overflow: hidden; padding-bottom: 0.06em; }
 .chapter__title-in { display: block; will-change: transform; }
+
+.chapter__next {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: clamp(14px, 3.4vw, 20px);
+  font-size: 9.5px;
+  opacity: 0.5;
+}
+.chapter__next-word { opacity: 0.7; }
+.chapter__next-label { font-weight: 500; }
+/* Une vraie flèche : le trait vertical se lisait comme une coquille. */
+.chapter__next-arrow {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  animation: next-pulse 2.6s ease-in-out infinite;
+}
+@keyframes next-pulse {
+  0%, 100% { transform: rotate(45deg) translate(-2px, -2px); opacity: 0.45; }
+  50% { transform: rotate(45deg) translate(1px, 1px); opacity: 1; }
+}
 
 .chapter__line {
   margin-top: clamp(12px, 3vw, 20px);
@@ -286,6 +344,67 @@
   max-width: 32ch;
   opacity: 0.8;
 }
+
+/* ---- Preuve et visite sur place -----------------------------------
+   Deux sections de texte entre le dernier chapitre et le choix de taille :
+   pourquoi nous faire confiance, et qu'on peut venir sur place. */
+
+.proof,
+.visit {
+  padding: clamp(74px, 17svh, 150px) var(--gutter);
+  text-align: center;
+}
+
+.proof__inner,
+.visit__inner { width: 100%; max-width: 620px; margin: 0 auto; }
+
+.proof__kicker {
+  font-size: clamp(1.35rem, 6.4vw, 2.1rem);
+  line-height: 1.24;
+  opacity: 0.88;
+}
+
+.proof__stats {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(28px, 7svh, 44px);
+  margin-top: clamp(42px, 10svh, 70px);
+}
+.proof__stats li { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+.proof__value { font-size: clamp(2.6rem, 14vw, 4rem); line-height: 0.92; }
+.proof__label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  line-height: 1.5;
+  opacity: 0.52;
+  max-width: 24ch;
+}
+
+.visit { border-top: 1px solid color-mix(in srgb, currentColor 11%, transparent); }
+.visit__place { display: block; font-size: 10px; opacity: 0.5; }
+.visit__title {
+  margin-top: clamp(16px, 4vw, 22px);
+  font-size: clamp(2rem, 10vw, 3.2rem);
+  line-height: 1.0;
+}
+.visit__text {
+  margin: clamp(18px, 5vw, 26px) auto 0;
+  max-width: 44ch;
+  font-size: 1rem;
+  line-height: 1.62;
+  opacity: 0.76;
+}
+
+/* Les deux sections arrivent au scroll. Masquées seulement si le JS a pu
+   poser `data-js` : sans lui, elles restent visibles. */
+:root[data-anim-ready] [data-reveal-section] > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.85s var(--e-out), transform 0.85s var(--e-out);
+}
+:root[data-anim-ready] [data-reveal-section][data-reveal] > * { opacity: 1; transform: none; }
 
 /* ---- CTA final --------------------------------------------------- */
 
@@ -299,7 +418,13 @@
 
 .final__inner { width: 100%; max-width: 520px; }
 
-.final__kicker { font-size: clamp(1.1rem, 5vw, 1.5rem); opacity: 0.72; }
+.final__kicker {
+  font-family: var(--font-spartan), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.6rem, 7.6vw, 2.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.012em;
+}
 
 .final__title {
   margin: clamp(30px, 8svh, 56px) 0 clamp(16px, 4vw, 24px);
@@ -324,8 +449,8 @@
   border-radius: 2px;
   transition: transform 0.3s var(--e-out), opacity 0.3s var(--e-out);
 }
-.size-btn__size { font-size: clamp(1.45rem, 7vw, 1.9rem); font-weight: 800; letter-spacing: -0.015em; line-height: 1; }
-.size-btn__handle { font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.52; }
+.size-btn__size { font-size: clamp(1.45rem, 7vw, 1.9rem); line-height: 1; text-transform: none; }
+.size-btn__handle { font-size: 10px; opacity: 0.52; }
 
 @media (hover: hover) {
   .size-btn:hover { transform: translateY(-2px); }
@@ -380,7 +505,7 @@
   font-size: 11px;
   letter-spacing: 0.06em;
 }
-.foot__mark { font-weight: 800; letter-spacing: -0.02em; font-size: 13px; }
+.foot__mark { font-family: var(--font-archivo), sans-serif; font-weight: 800; letter-spacing: -0.02em; font-size: 13px; }
 .foot nav { display: flex; gap: 16px; opacity: 0.6; }
 
 /* ---- Menu --------------------------------------------------------- */
@@ -412,9 +537,6 @@
   display: block;
   padding: 6px 12px;
   font-size: clamp(2rem, 11vw, 3.4rem);
-  font-weight: 800;
-  letter-spacing: -0.028em;
-  text-transform: uppercase;
   transition: opacity 0.3s var(--e-out);
 }
 @media (hover: hover) {
@@ -425,11 +547,12 @@
 
 @media (min-width: 560px) {
   .final__choice { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .proof__stats { grid-template-columns: repeat(3, 1fr); gap: 24px; }
 }
 
 @media (min-width: 900px) {
   :root { --gutter: 48px; }
-  .chapter { height: 200svh; }
+  .chapter { height: 150svh; }
   .chapter__caption { padding-bottom: clamp(70px, 14svh, 140px); }
   .masthead__em { font-size: 20px; }
   .masthead__vintage { font-size: 8px; }
@@ -446,14 +569,48 @@
 :root[data-static] .mark__vintage { opacity: 1; letter-spacing: 0.34em; text-indent: 0.34em; animation: none; }
 :root[data-static] .hero__rule { transform: none; animation: none; }
 :root[data-static] .hero__baseline { opacity: 1; animation: none; }
-:root[data-static] .hero__hint { display: none; }
+:root[data-static] .hero__brands {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px 18px;
+  max-width: 21rem;
+  margin-top: clamp(20px, 6vw, 30px);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fade-in 0.9s ease 1.72s forwards;
+}
+.hero__brands li { opacity: 0.58; }
+
+.hero__hint { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .mark__em { clip-path: none; animation: none; }
   .mark__vintage { opacity: 1; letter-spacing: 0.34em; text-indent: 0.34em; animation: none; }
   .hero__rule { transform: none; animation: none; }
   .hero__baseline { opacity: 1; animation: none; }
-  .hero__hint { display: none; }
+  .hero__brands {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px 18px;
+  max-width: 21rem;
+  margin-top: clamp(20px, 6vw, 30px);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fade-in 0.9s ease 1.72s forwards;
+}
+.hero__brands li { opacity: 0.58; }
+
+.hero__hint { display: none; }
   .chapter { height: auto; }
   .chapter__sticky { position: relative; height: auto; min-height: 88svh; }
 }

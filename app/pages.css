@@ -6,7 +6,7 @@
 .page__back { display: inline-block; margin-bottom: clamp(28px, 7svh, 52px); font-size: 11px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.55; }
 .page__back:hover { opacity: 1; }
 
-.page__title { font-size: clamp(2.4rem, 12vw, 4rem); font-weight: 800; line-height: 0.98; letter-spacing: -0.03em; text-transform: uppercase; }
+.page__title { font-family: var(--font-archivo), sans-serif; font-size: clamp(2.4rem, 12vw, 4rem); font-weight: 800; line-height: 0.98; letter-spacing: -0.03em; text-transform: uppercase; }
 .page__intro { margin-top: clamp(16px, 4vw, 24px); font-size: clamp(1.05rem, 4.6vw, 1.3rem); line-height: 1.5; opacity: 0.78; }
 
 .page__section { margin-top: clamp(38px, 9svh, 64px); }

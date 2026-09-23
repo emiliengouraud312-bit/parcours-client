@@ -1,7 +1,7 @@
 import type { Chapter } from './chapters.data';
 import ChapterMedia from './ChapterMedia';
 
-export default function ChapterSection({ chapter }: { chapter: Chapter }) {
+export default function ChapterSection({ chapter, next }: { chapter: Chapter; next?: Chapter }) {
   return (
     <section
       className="chapter"
@@ -20,7 +20,7 @@ export default function ChapterSection({ chapter }: { chapter: Chapter }) {
             {chapter.n}
           </span>
 
-          <h2 className="chapter__title" id={`${chapter.id}-title`}>
+          <h2 className="chapter__title u-display" id={`${chapter.id}-title`}>
             <span className="chapter__mask">
               <span className="chapter__title-in" data-anim="title">
                 {chapter.title}
@@ -31,6 +31,16 @@ export default function ChapterSection({ chapter }: { chapter: Chapter }) {
           <p className="chapter__line u-serif" data-anim="line">
             {chapter.line}
           </p>
+
+          {/* Annonce l'étape suivante : c'est ce qui relie les six plans
+              entre eux au lieu de les laisser côte à côte. */}
+          {next && (
+            <p className="chapter__next u-eyebrow" data-anim="next">
+              <span className="chapter__next-word">Puis</span>
+              <span className="chapter__next-label">{next.title}</span>
+              <i className="chapter__next-arrow" aria-hidden="true" />
+            </p>
+          )}
         </div>
       </div>
     </section>

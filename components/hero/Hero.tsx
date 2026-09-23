@@ -15,7 +15,7 @@ export default function Hero() {
 
         <span className="hero__rule" aria-hidden="true" />
 
-        <p className="hero__baseline u-serif">Des vêtements de marque, déjà portés.</p>
+        <p className="hero__baseline u-serif">Des vêtements de marque, de seconde main.</p>
 
         <ul className="hero__brands">
           {BRANDS.map((b) => (

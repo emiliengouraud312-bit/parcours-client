@@ -12,6 +12,9 @@ import Proof from '@/components/sections/Proof';
 import LocalVisit from '@/components/sections/LocalVisit';
 import FinalCta from '@/components/cta/FinalCta';
 import './experience.css';
+// Le menu affiche le contenu des pages secondaires sur place : il lui faut
+// leurs styles, même si aucune route n'est chargée.
+import './pages.css';
 
 export default function Page() {
   return (
@@ -26,8 +29,8 @@ export default function Page() {
           <ChapterSection key={chapter.id} chapter={chapter} next={CHAPTERS[i + 1]} />
         ))}
         <Proof />
-        <LocalVisit />
         <FinalCta />
+        <LocalVisit />
       </main>
 
       <SiteFooter />

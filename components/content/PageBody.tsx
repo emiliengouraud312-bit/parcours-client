@@ -1,5 +1,6 @@
 import type { PageContent } from '@/content/pages';
 import { VINTED } from '@/lib/vinted';
+import VintedLink from '@/components/cta/VintedLink';
 
 const W = [640, 960, 1280];
 
@@ -12,10 +13,10 @@ export default function PageBody({ page }: { page: PageContent }) {
   const accounts = (
     <div className="page__cta">
       {[VINTED.menSmall, VINTED.menLarge].map((acc) => (
-        <a key={acc.handle} className="size-btn" href={acc.url} target="_blank" rel="noopener noreferrer">
+        <VintedLink key={acc.handle} className="size-btn" href={acc.url}>
           <span className="size-btn__size u-display">{acc.sizes}</span>
           <span className="size-btn__handle u-eyebrow">{acc.handle}</span>
-        </a>
+        </VintedLink>
       ))}
     </div>
   );

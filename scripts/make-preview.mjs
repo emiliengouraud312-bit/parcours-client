@@ -73,7 +73,15 @@ for (const file of walk(OUT)) {
   if (ext === '.js') {
     // Le publicPath de webpack est résolu par rapport au document, et toutes
     // les pages sont à la racine : « _next/ » est correct pour toutes.
-    assets += save(file, raw, replaceAll(raw, [['"/_next/"', `"${ASSETS}/"`]]));
+    //
+    // Les chemins de médias construits à l'exécution (le panneau du menu est
+    // rendu côté client) n'apparaissent nulle part dans le HTML : ils vivent
+    // dans les bundles et doivent être rendus relatifs ici aussi.
+    assets += save(file, raw, replaceAll(raw, [
+      ['"/_next/"', `"${ASSETS}/"`],
+      ['/media/img/', 'media/img/'],
+      ['/media/video/', 'media/video/'],
+    ]));
   }
 }
 

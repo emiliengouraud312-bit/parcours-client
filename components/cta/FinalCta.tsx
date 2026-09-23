@@ -1,0 +1,68 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { VINTED, WOMEN_URL } from '@/lib/vinted';
+
+/**
+ * Le CTA n'utilise ni GSAP ni Lenis : c'est la seule raison d'être du site,
+ * il ne doit dépendre d'aucune librairie. L'état par défaut est « visible » ;
+ * le masquage n'existe que si le JS a pu poser `data-js` sur <html>. Si quoi
+ * que ce soit échoue en amont, les deux boutons restent affichés.
+ */
+export default function FinalCta() {
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    document.documentElement.dataset.js = 'on';
+
+    const reveal = () => el.setAttribute('data-reveal', 'on');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return reveal();
+
+    // Le même observateur révèle le CTA et efface le rail de progression :
+    // arrivé au choix de taille, plus rien ne doit passer devant les boutons.
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) reveal();
+          document.documentElement.toggleAttribute('data-at-end', e.isIntersecting);
+        }),
+      { rootMargin: '0px 0px -22% 0px' },
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      document.documentElement.removeAttribute('data-at-end');
+    };
+  }, []);
+
+  return (
+    <section className="final" id="final" ref={ref} aria-labelledby="final-title">
+      <div className="final__inner">
+        <p className="final__kicker u-serif">Voilà. Le reste est sur Vinted.</p>
+
+        <h2 className="final__title u-eyebrow" id="final-title">
+          Choisissez votre taille
+        </h2>
+
+        {/* Les deux boutons homme entrent au même instant, avec le même délai :
+            aucun des deux ne doit jamais passer devant l'autre. */}
+        <div className="final__choice">
+          {[VINTED.menSmall, VINTED.menLarge].map((acc) => (
+            <a key={acc.handle} className="size-btn" href={acc.url} target="_blank" rel="noopener noreferrer">
+              <span className="size-btn__size">{acc.sizes}</span>
+              <span className="size-btn__handle">{acc.handle}</span>
+            </a>
+          ))}
+        </div>
+
+        <p className="final__women">
+          <a href={WOMEN_URL} target="_blank" rel="noopener noreferrer">
+            quelques pièces femme disponibles <span aria-hidden="true">→</span>
+          </a>
+        </p>
+      </div>
+    </section>
+  );
+}

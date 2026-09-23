@@ -107,8 +107,8 @@ export default function ChapterMedia({ chapter }: { chapter: Chapter }) {
             alt=""
             loading="lazy"
             decoding="async"
-            width={hasVideo ? 640 : 960}
-            height={hasVideo ? 1138 : 1707}
+            width={hasVideo ? 1080 : 960}
+            height={hasVideo ? 1920 : 1707}
           />
         </picture>
       ) : (
@@ -131,10 +131,10 @@ export default function ChapterMedia({ chapter }: { chapter: Chapter }) {
           disablePictureInPicture
           aria-label={title}
         >
-          {/* Le codec est précisé sur le WebM pour que Safari le refuse
-              franchement au lieu de l'accepter puis de caler faute de
-              décodage VP9. Le MP4, lui, reste déclaré au plus large. */}
-          <source src={`/media/video/${id}.webm`} type={'video/webm; codecs="vp9"'} />
+          {/* Un seul format. Le WebM ne gagnait rien en poids et Safari iOS
+              l'acceptait parfois pour échouer ensuite au décodage — d'où des
+              chapitres qui démarraient et d'autres non. Le H.264 est lu et
+              décodé en matériel partout. */}
           <source src={`/media/video/${id}.mp4`} type="video/mp4" />
         </video>
       )}

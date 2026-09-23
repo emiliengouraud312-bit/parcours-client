@@ -61,8 +61,10 @@ const CLIPS = {
   // Les articles vendus sont authentiques : on ne laisse pas une étiquette
   // fantaisiste laisser croire le contraire. Elle est donc floutée.
   '03': {
-    id: 'ch03-repassage', start: 0.5, want: 4.4, loop: 'xfade', vp9: 46, h264: 34,
-    blur: { cx: 210, cy: 310, rx: 135, ry: 85, feather: 26, sigma: 26 },
+    id: 'ch03-repassage', start: 0.5, want: 4.4, loop: 'xfade', h264: 31,
+    // Coordonnées en fractions de l'image, pour rester justes quelle que
+    // soit la résolution d'encodage.
+    blur: { cx: 0.328, cy: 0.272, rx: 0.211, ry: 0.075, feather: 0.041 },
   },
   // Même chose qu'en 01 : les mains n'entrent dans le cadre qu'à 2 s.
   '04': { id: 'ch04-prise-de-vue', start: 1.9, want: 5.2, loop: 'xfade' },
@@ -70,12 +72,14 @@ const CLIPS = {
   '06': { id: 'ch06-expedition', start: 0.12, want: 5.2, loop: 'xfade' },
 };
 
-/* Ces clips sont de l'ambiance de fond, sous un voile et un grain : 640 px
-   de large suffisent largement, et divisent le poids par deux. */
-const VW = 640;
-const VH = 1138;
-const VP9 = 42;
-const H264 = 32;
+/* 1080 px de large : sur un téléphone récent, le plein écran fait ~1170 px
+   physiques, donc en dessous l'image est agrandie et paraît floue.
+   Un seul format, H.264 : il est lu partout, décodé en matériel partout, et
+   se révélait déjà plus léger que le VP9 sur cinq clips sur six. Le WebM
+   n'apportait rien et Safari iOS l'acceptait parfois pour échouer ensuite. */
+const VW = 1080;
+const VH = 1920;
+const H264 = 29;
 
 const ff = (args) => execFileSync(ffmpegPath, ['-y', '-hide_banner', '-loglevel', 'error', ...args], { stdio: 'pipe' });
 
@@ -85,9 +89,10 @@ const ff = (args) => execFileSync(ffmpegPath, ['-y', '-hide_banner', '-loglevel'
  * au lieu d'y poser un rectangle de censure.
  */
 async function blurMask({ cx, cy, rx, ry, feather }, file) {
+  const px = (f, base) => Math.round(f * base);
   const svg = `<svg width="${VW}" height="${VH}"><rect width="${VW}" height="${VH}" fill="black"/>` +
-    `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="white"/></svg>`;
-  await sharp(Buffer.from(svg)).blur(feather).greyscale().png().toFile(file);
+    `<ellipse cx="${px(cx, VW)}" cy="${px(cy, VH)}" rx="${px(rx, VW)}" ry="${px(ry, VH)}" fill="white"/></svg>`;
+  await sharp(Buffer.from(svg)).blur(px(feather, VW)).greyscale().png().toFile(file);
 }
 
 function durationOf(file) {
@@ -146,29 +151,29 @@ async function clips(pick) {
 
     const x = clip.loop === 'xfade' ? Math.min(0.7, d / 4) : 0;
     let filter = clip.loop === 'pingpong' ? pingpongLoop() : xfadeLoop(d, x);
+    /** Rayon du flou, en pixels, déduit de la résolution d'encodage. */
+    let blurSigma = 0;
     const cut = ['-ss', String(start), '-t', String(d), '-i', src];
     const outLen = clip.loop === 'pingpong' ? d * 2 : d - x;
 
     if (clip.blur) {
       const mask = path.join(OUT, `video/.mask-${clip.id}.png`);
       await blurMask(clip.blur, mask);
+      blurSigma = Math.round(clip.blur.feather * VW);
       cut.push('-loop', '1', '-i', mask);
       filter +=
-        `;[v]split=2[base][pre];[pre]gblur=sigma=${clip.blur.sigma}[bl];` +
+        `;[v]split=2[base][pre];[pre]gblur=sigma=${blurSigma}[bl];` +
         `[1:v]format=gray,scale=${VW}:${VH}[m];[bl][m]alphamerge[bla];` +
         `[base][bla]overlay=0:0:shortest=1[vout]`;
     }
     const outLabel = clip.blur ? '[vout]' : '[v]';
 
     ff([...cut, '-filter_complex', filter, '-map', outLabel, '-an',
-      '-c:v', 'libvpx-vp9', '-crf', String(clip.vp9 ?? VP9), '-b:v', '0', '-row-mt', '1',
-      '-deadline', 'good', '-cpu-used', '2',
-      '-auto-alt-ref', '1', '-lag-in-frames', '25', '-tile-columns', '1',
-      path.join(OUT, `video/${clip.id}.webm`)]);
-
-    ff([...cut, '-filter_complex', filter, '-map', outLabel, '-an',
-      '-c:v', 'libx264', '-crf', String(clip.h264 ?? H264), '-preset', 'slow', '-profile:v', 'main',
-      '-movflags', '+faststart', '-pix_fmt', 'yuv420p',
+      '-c:v', 'libx264', '-crf', String(clip.h264 ?? H264), '-preset', 'slow',
+      // Profil Main niveau 4.0 : lu par tous les iPhone en circulation.
+      '-profile:v', 'main', '-level', '4.0',
+      '-pix_fmt', 'yuv420p', '-g', '48', '-fps_mode', 'cfr',
+      '-movflags', '+faststart',
       path.join(OUT, `video/${clip.id}.mp4`)]);
 
     // Poster = la toute première image du clip final, pour qu'aucune
@@ -179,7 +184,7 @@ async function clips(pick) {
       // flou, sinon l'étiquette réapparaît le temps que la vidéo démarre.
       const mask = path.join(OUT, `video/.mask-${clip.id}.png`);
       ff(['-ss', String(start), '-i', src, '-loop', '1', '-i', mask, '-filter_complex',
-        `[0:v]${SCALE},split=2[base][pre];[pre]gblur=sigma=${clip.blur.sigma}[bl];` +
+        `[0:v]${SCALE},split=2[base][pre];[pre]gblur=sigma=${blurSigma}[bl];` +
         `[1:v]format=gray,scale=${VW}:${VH}[m];[bl][m]alphamerge[bla];[base][bla]overlay=0:0[p]`,
         '-map', '[p]', '-frames:v', '1', frame]);
     } else {
@@ -193,7 +198,7 @@ async function clips(pick) {
     const kb = (p) => Math.round(statSync(p).size / 1024);
     console.log(
       `clip  ${clip.id.padEnd(18)} rush ${total.toFixed(2)}s -> ${outLen.toFixed(2)}s ${clip.loop}` +
-        `   webm ${kb(path.join(OUT, `video/${clip.id}.webm`))}ko  mp4 ${kb(path.join(OUT, `video/${clip.id}.mp4`))}ko`,
+        `   mp4 ${kb(path.join(OUT, `video/${clip.id}.mp4`))}ko`,
     );
   }
 }

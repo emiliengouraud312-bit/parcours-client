@@ -1,0 +1,144 @@
+/* ---------------------------------------------------------------
+   Système EM Vintage — les deux couleurs viennent du logo
+   (échantillonnées au pixel : fond #2B2B2B, crème #F1EFE7).
+   --------------------------------------------------------------- */
+:root {
+  --ink: #2b2b2b;
+  --ink-deep: #1a1a1a;
+  --bone: #f1efe7;
+  --bone-dim: #c0bfb9;
+  --ash: #7b7b77;
+  --indigo-300: #8fa8bf; /* sur fond sombre  — 5.4:1 */
+  --indigo-900: #3e5166; /* sur fond crème   — 5.9:1 */
+
+  /* pilotés par le scroll (arc de luminosité) */
+  --bg-now: var(--ink-deep);
+  --fg-now: var(--bone);
+
+  --gutter: 20px;
+  --rail: 40px;
+
+  --e-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --d-fast: 0.42s;
+  --d-base: 0.9s;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+* { margin: 0; padding: 0; }
+
+html {
+  /* Lenis gère le lissage sur desktop ; au toucher on garde l'inertie native. */
+  -webkit-text-size-adjust: 100%;
+  /* `clip` plutôt que `hidden` : `hidden` crée un conteneur de défilement
+     et casse `position: sticky` sur les chapitres. */
+  overflow-x: clip;
+}
+
+body {
+  min-height: 100svh;
+  background: var(--bg-now);
+  color: var(--fg-now);
+  font-family: var(--font-dm), system-ui, sans-serif;
+  font-weight: 400;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.1s linear;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+img, video, picture, svg { display: block; max-width: 100%; }
+
+::selection { background: var(--fg-now); color: var(--bg-now); }
+
+:focus-visible {
+  outline: 2px solid var(--indigo-300);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ---- Typo --------------------------------------------------- */
+
+.u-eyebrow {
+  font-family: var(--font-dm), system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+/* Archivo est réservée aux titres — elle porte le mot-symbole. */
+.u-display {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.028em;
+  text-transform: uppercase;
+}
+
+.u-serif {
+  font-family: var(--font-instrument), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ---- Grain ---------------------------------------------------
+   Une seule couche fixe pour toute la page. Sur mobile on la fige
+   (pas de repaint par frame) : l'effet tient, le coût disparaît.  */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: var(--grain-src);
+  background-size: 180px 180px;
+}
+
+@media (min-width: 900px) {
+  .grain { animation: grain-shift 0.9s steps(3) infinite; }
+}
+
+@keyframes grain-shift {
+  0%   { background-position: 0 0; }
+  33%  { background-position: -34px 22px; }
+  66%  { background-position: 26px -30px; }
+  100% { background-position: 0 0; }
+}
+
+/* ---- Accessibilité ------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .grain { animation: none; }
+}
+
+.u-visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.u-skip {
+  position: absolute;
+  top: 8px; left: 8px;
+  z-index: 200;
+  padding: 10px 16px;
+  background: var(--bone);
+  color: var(--ink);
+  transform: translateY(-160%);
+  transition: transform var(--d-fast) var(--e-out);
+}
+.u-skip:focus-visible { transform: translateY(0); }

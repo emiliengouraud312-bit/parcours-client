@@ -1,0 +1,672 @@
+/* ===============================================================
+   L'expérience scrollée. Mobile d'abord : toutes les valeurs de
+   base visent le téléphone, le desktop n'ajoute que des paliers.
+   =============================================================== */
+
+/* ---- Chrome fixe ---------------------------------------------- */
+
+.masthead,
+.menu-btn {
+  position: fixed;
+  z-index: 50;
+  top: max(14px, env(safe-area-inset-top));
+  transition: opacity 0.5s var(--e-out);
+}
+
+/* Le mot-symbole en haut à gauche n'apparaît qu'une fois le hero passé :
+   sur le premier écran, il ferait doublon avec le grand logo. */
+.masthead { opacity: 0; pointer-events: none; }
+
+:root[data-chrome='on'] .masthead,
+:root[data-static] .masthead {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Le menu, lui, reste joignable dès le départ. Discret ne veut pas dire
+   introuvable : sans lui, aucune navigation n'existe sur le premier écran.
+   Il se pose simplement après l'intro, pour ne pas la couper. */
+.menu-btn { opacity: 0; animation: fade-in 0.7s ease 2.1s forwards; }
+:root[data-static] .menu-btn { opacity: 1; animation: none; }
+
+.masthead { left: var(--gutter); }
+.masthead__mark { display: flex; flex-direction: column; line-height: 1; }
+.masthead__em { font-family: var(--font-archivo), sans-serif; font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+.masthead__vintage {
+  font-size: 7px;
+  font-weight: 300;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  opacity: 0.66;
+  margin-top: 2px;
+}
+
+.menu-btn {
+  right: calc(var(--gutter) - 10px);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 10px;
+}
+.menu-btn__bars { display: flex; flex-direction: column; gap: 4px; }
+.menu-btn__bars i {
+  display: block;
+  width: 22px;
+  height: 1.5px;
+  background: currentColor;
+  transition: width 0.3s var(--e-out);
+}
+/* Le trait du milieu plus court : le bouton a une silhouette, pas juste
+   trois barres génériques. */
+.menu-btn__bars i:nth-child(2) { width: 14px; }
+.menu-btn__label { font-size: 10px; }
+
+@media (hover: hover) {
+  .menu-btn:hover .menu-btn__bars i:nth-child(2) { width: 22px; }
+}
+
+/* ---- Rail de progression --------------------------------------- */
+
+.rail {
+  position: fixed;
+  right: max(9px, env(safe-area-inset-right));
+  top: 50%;
+  z-index: 50;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  opacity: 0;
+  transition: opacity 0.5s var(--e-out);
+  font-variant-numeric: tabular-nums;
+}
+/* Le rail ne dit quelque chose que pendant les six chapitres : au-delà, il
+   se posait sur le texte des sections suivantes. */
+:root[data-chapters] .rail { opacity: 1; }
+:root[data-static] .rail { display: none; }
+
+.rail__n,
+.rail__total { font-size: 9px; font-weight: 500; letter-spacing: 0.16em; }
+.rail__total { opacity: 0.4; }
+
+/* Six segments : on voit d'un coup d'œil qu'il y a six étapes, et laquelle
+   est en cours. Une barre continue ne disait ni l'un ni l'autre. */
+.rail__track {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 1px;
+  height: 22svh;
+}
+.rail__seg {
+  flex: 1;
+  background: currentColor;
+  opacity: 0.2;
+  transition: opacity 0.35s var(--e-out), background-color 0.35s var(--e-out);
+}
+.rail__seg[data-on] { opacity: 1; background: var(--indigo-300); }
+
+/* ---- Hero ------------------------------------------------------ */
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 0 var(--gutter);
+}
+
+.hero__inner { display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+.mark { display: flex; flex-direction: column; align-items: center; will-change: transform, opacity; }
+
+.mark__em {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: clamp(4.6rem, 27vw, 11rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.84;
+  clip-path: inset(50% 0 50% 0);
+  animation: mark-open 0.72s var(--e-out) 0.1s forwards;
+}
+
+.mark__vintage {
+  font-family: var(--font-archivo), sans-serif;
+  margin-top: clamp(10px, 3vw, 18px);
+  font-size: clamp(0.66rem, 3.2vw, 1rem);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-indent: 0.06em;
+  opacity: 0;
+  animation: vintage-open 0.9s var(--e-out) 0.62s forwards;
+}
+
+.hero__rule {
+  display: block;
+  width: min(62vw, 300px);
+  height: 1px;
+  margin: clamp(22px, 7vw, 40px) 0 clamp(16px, 5vw, 26px);
+  background: currentColor;
+  opacity: 0.28;
+  transform: scaleX(0);
+  animation: rule-open 0.9s var(--e-out) 1s forwards;
+}
+
+.hero__baseline {
+  font-size: clamp(1.05rem, 4.8vw, 1.5rem);
+  opacity: 0;
+  animation: rise 0.8s var(--e-out) 1.32s forwards;
+}
+
+.hero__brands {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px 18px;
+  max-width: 21rem;
+  margin-top: clamp(20px, 6vw, 30px);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fade-in 0.9s ease 1.72s forwards;
+}
+.hero__brands li { opacity: 0.58; }
+
+.hero__hint {
+  position: absolute;
+  bottom: max(26px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  opacity: 0;
+  animation: fade-in 0.8s ease 1.9s forwards;
+}
+.hero__hint-label { font-size: 9px; opacity: 0.5; }
+.hero__hint-line { width: 1px; height: 30px; background: currentColor; opacity: 0.3; transform-origin: top; animation: hint 2.4s ease-in-out 2.4s infinite; }
+
+@keyframes mark-open   { to { clip-path: inset(0 0 0 0); } }
+@keyframes vintage-open{ to { opacity: 1; letter-spacing: 0.34em; text-indent: 0.34em; } }
+@keyframes rule-open   { to { transform: scaleX(1); } }
+@keyframes rise        { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes fade-in     { to { opacity: 1; } }
+@keyframes hint        { 0%, 100% { transform: scaleY(0.3); opacity: 0.15; } 50% { transform: scaleY(1); opacity: 0.45; } }
+
+/* ---- Chapitres --------------------------------------------------
+   Pas de pin GSAP : `sticky` ne se décale pas quand la barre d'adresse
+   mobile se rétracte, un pin si.                                     */
+
+/* 130svh : le bloc reste figé environ un tiers d'écran, assez pour lire,
+   pas assez pour croire que le scroll est bloqué. À 180svh, la pause durait
+   presque deux écrans et passait pour un bug. */
+.chapter { position: relative; height: 130svh; color: var(--fg); }
+
+.chapter__sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  /* Le chapitre se dissout vers sa propre couleur avant de sortir : la
+     coupe entre deux photos devient un fondu au ton, pas une couture. */
+  background: var(--tone);
+}
+
+.media { position: absolute; inset: 0; margin: 0; overflow: hidden; }
+
+.media__el {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+/* L'affiche et la vidéo sont empilées. La vidéo n'apparaît qu'une fois
+   lisible : pas de cadre noir le temps qu'elle se charge, et le fondu depuis
+   l'affiche — la même image — ne se voit pas. */
+.media__video { opacity: 0; transition: opacity 0.5s ease; }
+.media__video[data-playing] { opacity: 1; }
+
+.media__bare {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(120% 80% at 50% 18%, color-mix(in srgb, var(--fg) 8%, transparent), transparent 62%),
+    var(--tone);
+}
+.media__bare-n {
+  font-size: clamp(9rem, 46vw, 22rem);
+  font-weight: 800;
+  line-height: 0.8;
+  opacity: 0.05;
+}
+
+/* Vignette teintée au ton du chapitre : elle donne de la profondeur sans
+   assombrir — sur le studio crème, elle éclaircit les bords au lieu de les
+   noircir. */
+.media__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 78% 62% at 50% 42%,
+    transparent 40%,
+    color-mix(in srgb, var(--tone) 30%, transparent) 78%,
+    color-mix(in srgb, var(--tone) 52%, transparent) 100%
+  );
+}
+
+/* Voile d'arrivée. Valeur au repos : transparent. C'est GSAP qui le monte à
+   1 puis le redescend au scroll — sans JS, le média reste visible. */
+.media__veil {
+  position: absolute;
+  inset: 0;
+  background: var(--tone);
+  opacity: 0;
+}
+
+.media__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--tone) 2%,
+    color-mix(in srgb, var(--tone) 78%, transparent) 34%,
+    color-mix(in srgb, var(--tone) 34%, transparent) 62%,
+    color-mix(in srgb, var(--tone) 8%, transparent) 86%,
+    transparent 100%
+  );
+}
+
+.chapter__caption {
+  position: relative;
+  will-change: opacity, transform;
+  z-index: 2;
+  grid-row: 2;
+  padding: 0 var(--gutter) clamp(52px, 13svh, 120px);
+  max-width: 700px;
+}
+
+.chapter__n { display: block; opacity: 0.55; margin-bottom: clamp(10px, 2.4vw, 16px); }
+
+/* Les titres sont des participes passés, parfois longs (« Défroissée à la
+   vapeur ») : la taille est calée sur le plus long, pas sur le plus court. */
+.chapter__title {
+  font-size: clamp(1.95rem, 9.6vw, 4.6rem);
+  line-height: 0.98;
+  overflow-wrap: break-word;
+}
+.chapter__mask { display: block; overflow: hidden; padding-bottom: 0.06em; }
+.chapter__title-in { display: block; will-change: transform; }
+
+.chapter__next {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: clamp(14px, 3.4vw, 20px);
+  font-size: 9.5px;
+  opacity: 0.5;
+}
+.chapter__next-word { opacity: 0.7; }
+.chapter__next-label { font-weight: 500; }
+/* Une vraie flèche : le trait vertical se lisait comme une coquille. */
+.chapter__next-arrow {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  animation: next-pulse 2.6s ease-in-out infinite;
+}
+@keyframes next-pulse {
+  0%, 100% { transform: rotate(45deg) translate(-2px, -2px); opacity: 0.45; }
+  50% { transform: rotate(45deg) translate(1px, 1px); opacity: 1; }
+}
+
+.chapter__line {
+  margin-top: clamp(12px, 3vw, 20px);
+  font-size: clamp(1.05rem, 4.6vw, 1.35rem);
+  line-height: 1.45;
+  max-width: 32ch;
+  opacity: 0.8;
+}
+
+/* ---- Preuve et visite sur place -----------------------------------
+   Deux sections de texte entre le dernier chapitre et le choix de taille :
+   pourquoi nous faire confiance, et qu'on peut venir sur place. */
+
+.proof { padding: clamp(60px, 13svh, 110px) 0 clamp(52px, 11svh, 96px); }
+
+.visit {
+  padding: clamp(74px, 17svh, 150px) var(--gutter);
+  text-align: center;
+}
+.visit__inner { width: 100%; max-width: 620px; margin: 0 auto; }
+
+/* Les trois chiffres tiennent sur une ligne, même à 360 px : la preuve doit
+   se lire d'un coup d'œil, pas se faire défiler. */
+.proof__stats {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 var(--gutter);
+  text-align: center;
+}
+.proof__stats li { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+
+.proof__value { font-size: clamp(1.5rem, 7.4vw, 2.6rem); line-height: 0.95; }
+.proof__label { font-size: 9px; letter-spacing: 0.14em; opacity: 0.5; }
+
+/* ---- Avis ---------------------------------------------------------
+   Transcrits depuis Vinted. Défilement horizontal sur téléphone : on en
+   voit plusieurs sans allonger la page avant le choix de taille. */
+.reviews {
+  list-style: none;
+  display: flex;
+  gap: 10px;
+  margin-top: clamp(30px, 7svh, 52px);
+  padding: 0 var(--gutter);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.reviews::-webkit-scrollbar { display: none; }
+
+.review {
+  flex: 0 0 min(76vw, 300px);
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 18px 16px;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 3px;
+}
+.review__stars { font-size: 11px; letter-spacing: 0.16em; color: var(--indigo-300); }
+.review__text { font-size: 0.94rem; line-height: 1.5; opacity: 0.88; flex: 1; }
+.review__meta { display: flex; justify-content: space-between; gap: 10px; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.42; }
+.review__author { font-weight: 500; }
+
+.visit { border-top: 1px solid color-mix(in srgb, currentColor 11%, transparent); }
+.visit__place { display: block; font-size: 10px; opacity: 0.5; }
+.visit__title {
+  margin-top: clamp(16px, 4vw, 22px);
+  font-size: clamp(2rem, 10vw, 3.2rem);
+  line-height: 1.0;
+}
+.visit__text {
+  margin: clamp(18px, 5vw, 26px) auto 0;
+  max-width: 44ch;
+  font-size: 1rem;
+  line-height: 1.62;
+  opacity: 0.76;
+}
+
+/* Les deux sections arrivent au scroll. Masquées seulement si le JS a pu
+   poser `data-js` : sans lui, elles restent visibles. */
+:root[data-anim-ready] [data-reveal-section] > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.85s var(--e-out), transform 0.85s var(--e-out);
+}
+:root[data-anim-ready] [data-reveal-section][data-reveal] > * { opacity: 1; transform: none; }
+
+/* ---- CTA final --------------------------------------------------- */
+
+.final {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(60px, 14svh, 130px) var(--gutter);
+  text-align: center;
+}
+
+.final__inner { width: 100%; max-width: 520px; }
+
+.final__title {
+  font-family: var(--font-spartan), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.7rem, 8.4vw, 2.8rem);
+  line-height: 1.06;
+  /* En capitales : un peu d'approche, sinon les lettres se collent. */
+  text-transform: uppercase;
+  letter-spacing: 0.012em;
+  margin-bottom: clamp(24px, 6svh, 40px);
+}
+
+/* Les deux boutons homme : même taille, même couleur, même poids.
+   Empilés sur téléphone, côte à côte dès qu'il y a la place.        */
+.final__choice { display: grid; grid-template-columns: 1fr; gap: 10px; }
+
+.size-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 88px;
+  padding: 18px 16px;
+  background: var(--bone);
+  color: var(--ink);
+  border-radius: 2px;
+  transition: transform 0.3s var(--e-out), opacity 0.3s var(--e-out);
+}
+.size-btn__size { font-size: clamp(1.45rem, 7vw, 1.9rem); line-height: 1; text-transform: none; }
+.size-btn__handle { font-size: 10px; opacity: 0.52; }
+
+@media (hover: hover) {
+  .size-btn:hover { transform: translateY(-2px); }
+}
+.size-btn:active { transform: translateY(0) scale(0.99); }
+
+/* Lien texte : trouvable, jamais à égalité avec les deux boutons. */
+.final__women { margin-top: clamp(22px, 5svh, 34px); font-size: 13px; }
+.final__women a {
+  color: var(--bone-dim);
+  padding-bottom: 2px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 32%, transparent);
+  transition: color 0.3s var(--e-out);
+}
+@media (hover: hover) {
+  .final__women a:hover { color: var(--fg-now); }
+}
+
+/* Révélation du CTA. L'état masqué n'existe que sous `:root[data-js]`,
+   posé par le composant lui-même : sans JS, tout est visible d'emblée. */
+:root[data-js] .final__title,
+:root[data-js] .final__choice,
+:root[data-js] .final__women {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.75s var(--e-out), transform 0.75s var(--e-out);
+}
+:root[data-js] .final__women { transform: none; }
+
+:root[data-js] .final[data-reveal] .final__title,
+:root[data-js] .final[data-reveal] .final__choice,
+:root[data-js] .final[data-reveal] .final__women {
+  opacity: 1;
+  transform: none;
+}
+
+:root[data-js] .final[data-reveal] .final__choice { transition-delay: 0.16s; }
+:root[data-js] .final[data-reveal] .final__women { transition-delay: 0.52s; }
+
+/* ---- Pied de page ------------------------------------------------- */
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 26px var(--gutter) max(26px, env(safe-area-inset-bottom));
+  border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.foot__mark { font-family: var(--font-archivo), sans-serif; font-weight: 800; letter-spacing: -0.02em; font-size: 13px; }
+.foot nav { display: flex; gap: 16px; opacity: 0.6; }
+
+/* ---- Menu --------------------------------------------------------- */
+
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--ink-deep);
+  color: var(--bone);
+  /* C'est l'écran entier qui défile, pas un enfant : un conteneur de
+     défilement imbriqué se fait intercepter par le smooth scroll — au
+     lieu du panneau, c'est la page derrière qui bougeait. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  clip-path: inset(0 0 100% 0);
+  visibility: hidden;
+  transition: clip-path 0.62s var(--e-out), visibility 0s linear 0.62s;
+}
+.menu[data-open] { clip-path: inset(0 0 0 0); visibility: visible; transition-delay: 0s, 0s; }
+
+/* Le panneau porte le contenu : on ne quitte jamais la page. */
+.menu__bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--ink-deep);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: max(12px, env(safe-area-inset-top)) var(--gutter) 12px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.menu__back,
+.menu__close { padding: 12px 2px; font-size: 10px; opacity: 0.6; }
+@media (hover: hover) {
+  .menu__back:hover,
+  .menu__close:hover { opacity: 1; }
+}
+
+/* Le choix des pages : trois grands liens, comme avant. */
+.menu__nav {
+  display: grid;
+  place-items: center;
+  min-height: 72svh;
+}
+.menu__nav ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 4svh, 26px);
+  text-align: center;
+}
+.menu__nav button {
+  display: block;
+  padding: 6px 12px;
+  font-size: clamp(2rem, 11vw, 3.4rem);
+  transition: opacity 0.3s var(--e-out);
+}
+@media (hover: hover) {
+  .menu__nav button:hover { opacity: 0.55; }
+}
+
+.menu__content {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: clamp(30px, 7svh, 54px) var(--gutter) clamp(60px, 14svh, 110px);
+}
+
+/* ---- Desktop : mêmes règles, plus d'air -------------------------- */
+
+@media (min-width: 560px) {
+  .final__choice { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .proof__stats { gap: 24px; }
+}
+
+@media (min-width: 900px) {
+  .reviews { justify-content: center; flex-wrap: wrap; overflow: visible; }
+  .review { flex: 0 0 300px; }
+}
+
+@media (min-width: 900px) {
+  :root { --gutter: 48px; }
+  .chapter { height: 150svh; }
+  .chapter__caption { padding-bottom: clamp(70px, 14svh, 140px); }
+  .masthead__em { font-size: 20px; }
+  .masthead__vintage { font-size: 8px; }
+  .rail { right: 26px; }
+  .foot { padding: 34px var(--gutter); }
+}
+
+/* ---- prefers-reduced-motion : un vrai parcours, pas une version
+   dégradée. Sections empilées, scroll natif, même contenu.          */
+
+:root[data-static] .chapter { height: auto; }
+:root[data-static] .chapter__sticky { position: relative; height: auto; min-height: 88svh; }
+:root[data-static] .mark__em { clip-path: none; animation: none; }
+:root[data-static] .mark__vintage { opacity: 1; letter-spacing: 0.34em; text-indent: 0.34em; animation: none; }
+:root[data-static] .hero__rule { transform: none; animation: none; }
+:root[data-static] .hero__baseline { opacity: 1; animation: none; }
+:root[data-static] .hero__brands {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px 18px;
+  max-width: 21rem;
+  margin-top: clamp(20px, 6vw, 30px);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fade-in 0.9s ease 1.72s forwards;
+}
+.hero__brands li { opacity: 0.58; }
+
+.hero__hint { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mark__em { clip-path: none; animation: none; }
+  .mark__vintage { opacity: 1; letter-spacing: 0.34em; text-indent: 0.34em; animation: none; }
+  .hero__rule { transform: none; animation: none; }
+  .hero__baseline { opacity: 1; animation: none; }
+  .hero__brands {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px 18px;
+  max-width: 21rem;
+  margin-top: clamp(20px, 6vw, 30px);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fade-in 0.9s ease 1.72s forwards;
+}
+.hero__brands li { opacity: 0.58; }
+
+.hero__hint { display: none; }
+  .chapter { height: auto; }
+  .chapter__sticky { position: relative; height: auto; min-height: 88svh; }
+}

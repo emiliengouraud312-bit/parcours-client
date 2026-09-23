@@ -5,22 +5,25 @@ import { PAGES } from '@/content/pages';
 import PageBody from '@/components/content/PageBody';
 
 /**
- * Le menu n'envoie pas vers une autre page : il ouvre le contenu sur place.
- * Le site tient en un seul lien à partager, donc quitter la page pour lire
- * la FAQ n'a pas de sens — et certains hébergeurs d'aperçu bloquent la
- * navigation entre fichiers. Les routes /faq, /contact et /a-propos existent
- * toujours, pour le référencement et les liens directs.
+ * Deux temps : on choisit d'abord la page, puis on la lit. Le contenu
+ * s'affiche sur place plutôt que de charger une autre page — le site tient
+ * en un seul lien, et certains hébergeurs d'aperçu bloquent la navigation
+ * entre fichiers. Les routes /faq, /contact et /a-propos existent toujours,
+ * pour le référencement et les liens directs.
  */
 export default function Menu() {
+  const [open, setOpen] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const open = slug !== null;
-  const page = PAGES.find((p) => p.slug === slug) ?? PAGES[0];
+  const page = PAGES.find((p) => p.slug === slug);
 
-  const openAt = useCallback((s: string) => setSlug(s), []);
+  const openAt = useCallback((s: string | null) => {
+    setSlug(s);
+    setOpen(true);
+  }, []);
 
-  // Le pied de page s'en sert pour ouvrir le panneau au lieu de naviguer.
+  // Le pied de page s'en sert pour ouvrir directement la bonne page.
   useEffect(() => {
     document.documentElement.setAttribute('data-menu-available', '');
     const onAsk = (e: Event) => openAt((e as CustomEvent<string>).detail);
@@ -34,7 +37,12 @@ export default function Menu() {
   useEffect(() => {
     if (!open) return;
     closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setSlug(null);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      // Échap revient d'abord au choix, puis ferme.
+      if (slug) setSlug(null);
+      else setOpen(false);
+    };
     document.addEventListener('keydown', onKey);
     const { overflow } = document.body.style;
     document.body.style.overflow = 'hidden';
@@ -42,12 +50,17 @@ export default function Menu() {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = overflow;
     };
-  }, [open]);
+  }, [open, slug]);
 
-  // Chaque changement d'onglet repart du haut du panneau.
+  // Chaque page ouverte repart du haut.
   useEffect(() => {
-    if (open) panelRef.current?.scrollTo({ top: 0 });
-  }, [slug, open]);
+    if (slug) panelRef.current?.scrollTo({ top: 0 });
+  }, [slug]);
+
+  const close = () => {
+    setOpen(false);
+    setSlug(null);
+  };
 
   return (
     <>
@@ -56,7 +69,7 @@ export default function Menu() {
         className="menu-btn"
         aria-expanded={open}
         aria-controls="menu-overlay"
-        onClick={() => openAt(PAGES[0].slug)}
+        onClick={() => openAt(null)}
       >
         <span className="menu-btn__bars" aria-hidden="true">
           <i />
@@ -68,41 +81,45 @@ export default function Menu() {
 
       <div id="menu-overlay" className="menu" data-open={open || undefined} aria-hidden={!open}>
         <div className="menu__bar">
-          <div className="menu__tabs" role="tablist" aria-label="Pages">
-            {PAGES.map((p) => (
-              <button
-                key={p.slug}
-                type="button"
-                role="tab"
-                className="menu__tab u-eyebrow"
-                aria-selected={p.slug === slug}
-                data-active={p.slug === slug || undefined}
-                tabIndex={open ? 0 : -1}
-                onClick={() => openAt(p.slug)}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
+          {slug ? (
+            <button type="button" className="menu__back u-eyebrow" tabIndex={open ? 0 : -1} onClick={() => setSlug(null)}>
+              <span aria-hidden="true">←</span> Menu
+            </button>
+          ) : (
+            <span />
+          )}
 
-          <button
-            ref={closeRef}
-            type="button"
-            className="menu__close u-eyebrow"
-            tabIndex={open ? 0 : -1}
-            onClick={() => setSlug(null)}
-          >
+          <button ref={closeRef} type="button" className="menu__close u-eyebrow" tabIndex={open ? 0 : -1} onClick={close}>
             Fermer
           </button>
         </div>
 
-        <div className="menu__panel" ref={panelRef} role="tabpanel" aria-label={page.label}>
-          <div className="menu__content">
-            <h2 className="page__title">{page.title}</h2>
-            <p className="page__intro">{page.intro}</p>
-            <PageBody page={page} />
+        {page ? (
+          <div className="menu__panel" ref={panelRef}>
+            <div className="menu__content">
+              <h2 className="page__title">{page.title}</h2>
+              <p className="page__intro">{page.intro}</p>
+              <PageBody page={page} />
+            </div>
           </div>
-        </div>
+        ) : (
+          <nav className="menu__nav" aria-label="Pages secondaires">
+            <ul>
+              {PAGES.map((p) => (
+                <li key={p.slug}>
+                  <button
+                    type="button"
+                    className="u-display"
+                    tabIndex={open ? 0 : -1}
+                    onClick={() => setSlug(p.slug)}
+                  >
+                    {p.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
       </div>
     </>
   );

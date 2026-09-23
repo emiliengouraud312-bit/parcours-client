@@ -439,20 +439,15 @@
 
 .final__inner { width: 100%; max-width: 520px; }
 
-.final__kicker {
+.final__title {
   font-family: var(--font-spartan), system-ui, sans-serif;
   font-weight: 700;
-  font-size: clamp(1.45rem, 7vw, 2.3rem);
-  line-height: 1.08;
+  font-size: clamp(1.7rem, 8.4vw, 2.8rem);
+  line-height: 1.06;
   /* En capitales : un peu d'approche, sinon les lettres se collent. */
   text-transform: uppercase;
   letter-spacing: 0.012em;
-}
-
-.final__title {
-  margin: clamp(30px, 8svh, 56px) 0 clamp(16px, 4vw, 24px);
-  font-size: 11px;
-  opacity: 0.55;
+  margin-bottom: clamp(24px, 6svh, 40px);
 }
 
 /* Les deux boutons homme : même taille, même couleur, même poids.
@@ -494,7 +489,6 @@
 
 /* Révélation du CTA. L'état masqué n'existe que sous `:root[data-js]`,
    posé par le composant lui-même : sans JS, tout est visible d'emblée. */
-:root[data-js] .final__kicker,
 :root[data-js] .final__title,
 :root[data-js] .final__choice,
 :root[data-js] .final__women {
@@ -504,7 +498,6 @@
 }
 :root[data-js] .final__women { transform: none; }
 
-:root[data-js] .final[data-reveal] .final__kicker,
 :root[data-js] .final[data-reveal] .final__title,
 :root[data-js] .final[data-reveal] .final__choice,
 :root[data-js] .final[data-reveal] .final__women {
@@ -512,9 +505,8 @@
   transform: none;
 }
 
-:root[data-js] .final[data-reveal] .final__title { transition-delay: 0.12s; }
-:root[data-js] .final[data-reveal] .final__choice { transition-delay: 0.26s; }
-:root[data-js] .final[data-reveal] .final__women { transition-delay: 0.62s; }
+:root[data-js] .final[data-reveal] .final__choice { transition-delay: 0.16s; }
+:root[data-js] .final[data-reveal] .final__women { transition-delay: 0.52s; }
 
 /* ---- Pied de page ------------------------------------------------- */
 
@@ -557,20 +549,44 @@
   border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
 }
 
-.menu__tabs { display: flex; gap: 4px; }
-.menu__tab {
-  padding: 10px 10px;
-  font-size: 10px;
-  opacity: 0.45;
-  border-bottom: 1px solid transparent;
-  transition: opacity 0.25s var(--e-out), border-color 0.25s var(--e-out);
+.menu__back,
+.menu__close { padding: 12px 2px; font-size: 10px; opacity: 0.6; }
+@media (hover: hover) {
+  .menu__back:hover,
+  .menu__close:hover { opacity: 1; }
 }
-.menu__tab[data-active] { opacity: 1; border-bottom-color: currentColor; }
 
-.menu__close { padding: 10px 2px; font-size: 10px; opacity: 0.55; }
+/* Le choix des pages : trois grands liens, comme avant. */
+.menu__nav {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+}
+.menu__nav ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 4svh, 26px);
+  text-align: center;
+}
+.menu__nav button {
+  display: block;
+  padding: 6px 12px;
+  font-size: clamp(2rem, 11vw, 3.4rem);
+  transition: opacity 0.3s var(--e-out);
+}
+@media (hover: hover) {
+  .menu__nav button:hover { opacity: 0.55; }
+}
 
+/* `min-height: 0` est indispensable : sans lui, un enfant flex garde la
+   hauteur de son contenu, déborde du conteneur fixe et ne défile jamais.
+   C'est ce qui rendait les pages illisibles. */
 .menu__panel {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -592,7 +608,6 @@
 @media (min-width: 900px) {
   .reviews { justify-content: center; flex-wrap: wrap; overflow: visible; }
   .review { flex: 0 0 300px; }
-  .menu__tab { font-size: 11px; padding: 12px 14px; }
 }
 
 @media (min-width: 900px) {

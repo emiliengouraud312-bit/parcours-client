@@ -40,9 +40,7 @@ export default function FinalCta() {
   return (
     <section className="final" id="final" ref={ref} aria-labelledby="final-title">
       <div className="final__inner">
-        <p className="final__kicker">Il y a sûrement votre taille.</p>
-
-        <h2 className="final__title u-eyebrow" id="final-title">
+        <h2 className="final__title" id="final-title">
           Choisissez votre taille
         </h2>
 

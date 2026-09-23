@@ -1,6 +1,8 @@
 import type { PageContent } from '@/content/pages';
 import { VINTED } from '@/lib/vinted';
 
+const W = [640, 960, 1280];
+
 /**
  * Rendu unique du contenu des pages secondaires. Servi à la fois par les
  * routes (/faq, /contact, /a-propos) et par le panneau du menu, pour qu'il
@@ -27,6 +29,31 @@ export default function PageBody({ page }: { page: PageContent }) {
             {s.p.map((text) => (
               <p key={text.slice(0, 40)}>{text}</p>
             ))}
+
+            {s.img && (
+              <figure className="page__figure">
+                <picture>
+                  <source
+                    type="image/avif"
+                    sizes="(min-width: 720px) 680px, 100vw"
+                    srcSet={W.map((w) => `/media/img/${s.img!.id}-${w}.avif ${w}w`).join(', ')}
+                  />
+                  <source
+                    type="image/webp"
+                    sizes="(min-width: 720px) 680px, 100vw"
+                    srcSet={W.map((w) => `/media/img/${s.img!.id}-${w}.webp ${w}w`).join(', ')}
+                  />
+                  <img
+                    src={`/media/img/${s.img.id}-960.webp`}
+                    alt={s.img.alt}
+                    width={s.img.w}
+                    height={s.img.h}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </picture>
+              </figure>
+            )}
           </section>
           {page.accountsAfter === i && accounts}
         </div>

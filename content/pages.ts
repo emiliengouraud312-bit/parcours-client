@@ -1,6 +1,11 @@
 import { BRANDS, LOCAL } from './site';
 
-export type Section = { h?: string; p: string[] };
+export type Section = {
+  h?: string;
+  p: string[];
+  /** Illustration servie depuis public/media/img, en AVIF puis WebP. */
+  img?: { id: string; alt: string; w: number; h: number };
+};
 export type QA = { q: string; a: string };
 
 export type PageContent = {
@@ -31,6 +36,12 @@ export const ABOUT: PageContent = {
       p: [
         'C’est ici que tout se passe. Les ballots sont ouverts, les pièces triées une par une, lavées, repassées, photographiées, puis emballées avant de partir chez vous. Rien n’est sous-traité : chaque article passe entre nos mains avant d’arriver dans les vôtres.',
       ],
+      img: {
+        id: 'local-atelier',
+        alt: `Le local d’E&M Vintage : portants, étagères de pièces pliées, fond blanc et mannequins pour la prise de vue.`,
+        w: 1280,
+        h: 960,
+      },
     },
     {
       h: 'Des marques qu’on connaît par cœur',
@@ -39,7 +50,7 @@ export const ABOUT: PageContent = {
       ],
     },
     {
-      h: '40 000 articles. 20 000 clients.',
+      h: '40 000 articles vendus. 20 000 clients.',
       p: [
         'En 4 ans, nous avons reconditionné et vendu plus de 40 000 articles à plus de 20 000 clients. Avec une note de 4,9/5, ce sont eux qui en parlent le mieux. Chaque avis compte, et c’est ce qui nous pousse à soigner chaque envoi comme le premier.',
       ],

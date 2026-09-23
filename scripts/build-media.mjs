@@ -15,7 +15,9 @@ const WIDTHS = [640, 960, 1280];
 
 /* ---------------------------------------------------------------- images */
 
+/** `ratio` = hauteur / largeur. Par défaut 16/9 en portrait (plein écran). */
 const STILLS = [
+  { id: 'local-atelier', src: 'assets/source/atelier.jpg', ratio: 3 / 4 },
   { id: 'ch01-reception', src: 'assets/source/grange-ballots.jpg' },
   { id: 'ch03-repassage', src: 'assets/source/polo-raye.jpg' },
   { id: 'ch04-prise-de-vue', src: 'assets/source/atelier.jpg', crop: { left: 1120, top: 0, width: 880, height: 1500 } },
@@ -25,11 +27,11 @@ const STILLS = [
 
 async function stills() {
   mkdirSync(path.join(OUT, 'img'), { recursive: true });
-  for (const { id, src, crop } of STILLS) {
+  for (const { id, src, crop, ratio } of STILLS) {
     for (const w of WIDTHS) {
       const base = sharp(path.join(ROOT, src)).rotate();
       const piped = crop ? base.extract(crop) : base;
-      const resized = piped.resize({ width: w, height: Math.round((w * 16) / 9), fit: 'cover', position: 'attention' });
+      const resized = piped.resize({ width: w, height: Math.round(w * (ratio ?? 16 / 9)), fit: 'cover', position: 'attention' });
       await resized.clone().avif({ quality: 50, effort: 6 }).toFile(path.join(OUT, `img/${id}-${w}.avif`));
       await resized.clone().webp({ quality: 72 }).toFile(path.join(OUT, `img/${id}-${w}.webp`));
     }

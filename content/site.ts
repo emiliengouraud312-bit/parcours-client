@@ -11,7 +11,8 @@ export const BRANDS = [
 ];
 
 export const STATS = [
-  { value: '40 000', label: 'articles' },
+  // « articles » seul laissait croire à un stock en ligne : ce sont des ventes.
+  { value: '40 000', label: 'articles vendus' },
   { value: '20 000', label: 'clients' },
   { value: '4,9/5', label: 'note moyenne' },
 ];

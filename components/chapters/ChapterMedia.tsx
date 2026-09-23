@@ -48,7 +48,11 @@ export default function ChapterMedia({ chapter }: { chapter: Chapter }) {
             tabIndex={-1}
             disablePictureInPicture
           >
-            <source src={`/media/video/${id}.webm`} type="video/webm" />
+            {/* Le codec est précisé sur le WebM pour que Safari le refuse
+                franchement au lieu de l'accepter puis de caler faute de
+                décodage VP9. Le MP4, lui, reste déclaré au plus large : on
+                veut qu'il soit accepté partout. */}
+            <source src={`/media/video/${id}.webm`} type={'video/webm; codecs="vp9"'} />
             <source src={`/media/video/${id}.mp4`} type="video/mp4" />
           </video>
         </>

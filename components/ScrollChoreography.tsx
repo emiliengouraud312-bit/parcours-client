@@ -60,6 +60,8 @@ export default function ScrollChoreography() {
 
     const lite = saveData();
     const videos: HTMLVideoElement[] = [];
+    /** Le clip du chapitre à l'écran, pour pouvoir le relancer au besoin. */
+    let active: HTMLVideoElement | null = null;
 
     /** Précharge un clip sans le lire : le chapitre suivant démarre sans
      *  attente. `load()` n'est appelé que sur un élément encore vierge —
@@ -198,13 +200,18 @@ export default function ScrollChoreography() {
             start: 'top 88%',
             end: 'bottom 12%',
             onToggle: (self) => {
-              if (!self.isActive) return video.pause();
-              // La lecture déclenche elle-même le chargement : pas de load() ici.
+              if (!self.isActive) {
+                if (active === video) active = null;
+                return video.pause();
+              }
+              active = video;
+              // La lecture déclenche elle-même le chargement, mais iOS
+              // démarre plus volontiers sur un élément déjà en préchargement.
               video.dataset.warm = '1';
+              video.preload = 'auto';
               // Un refus de lecture (mode économie d'énergie iOS) laisse
               // simplement l'affiche : une vraie image du plan, pas un trou.
               if (!lite) void video.play().catch(() => {});
-              video.addEventListener('playing', () => video.setAttribute('data-playing', ''), { once: true });
               warm(videos[i + 1]); // le chapitre suivant se prépare pendant celui-ci
             },
           });
@@ -249,6 +256,16 @@ export default function ScrollChoreography() {
       }
     });
 
+    // Filet de sécurité : si le navigateur a refusé le démarrage automatique
+    // (mode économie d'énergie iOS, réglage d'économie de données), le premier
+    // contact de l'utilisateur relance le clip visible. Un geste lève toutes
+    // les restrictions de lecture.
+    const kick = () => {
+      if (active?.paused && !lite) void active.play().catch(() => {});
+    };
+    document.addEventListener('touchend', kick, { passive: true });
+    document.addEventListener('pointerup', kick, { passive: true });
+
     // Onglet en arrière-plan : rien ne doit continuer à tourner.
     const onVisibility = () => {
       if (document.hidden) videos.forEach((v) => v?.pause());
@@ -259,6 +276,8 @@ export default function ScrollChoreography() {
     void document.fonts?.ready.then(() => ScrollTrigger.refresh());
 
     return () => {
+      document.removeEventListener('touchend', kick);
+      document.removeEventListener('pointerup', kick);
       document.removeEventListener('visibilitychange', onVisibility);
       sectionIo.disconnect();
       delete root.dataset.animReady;

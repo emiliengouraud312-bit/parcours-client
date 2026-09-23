@@ -9,7 +9,7 @@ import { PAGES } from '@/content/pages';
 export default function SiteFooter() {
   return (
     <footer className="foot">
-      <span className="foot__mark">E&amp;M</span>
+      <span className="foot__mark">EM</span>
       <nav aria-label="Pages secondaires">
         {PAGES.map((p) => (
           <a

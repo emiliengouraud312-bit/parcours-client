@@ -38,15 +38,19 @@ export default function ChapterMedia({ chapter }: { chapter: Chapter }) {
     const el = ref.current;
     if (!el || !hasVideo || saveData() || reduced()) return;
 
-    // Monte la vidéo un écran à l'avance : elle a le temps de se charger,
-    // et les chapitres lointains ne coûtent rien.
+    // Le premier chapitre commence exactement à un écran du haut : avec une
+    // marge positive, son clip — plus d'un méga depuis le passage en 1080 —
+    // partait avant même le premier geste de scroll. La marge est donc
+    // négative : rien ne se charge tant qu'on n'a pas commencé à descendre.
+    // Il reste ensuite près d'un écran de défilement avant que le chapitre
+    // occupe la page, largement de quoi être prêt.
     const mount = new IntersectionObserver(
       (entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         setMounted(true);
         mount.disconnect();
       },
-      { rootMargin: '100% 0px' },
+      { rootMargin: '0px 0px -15% 0px' },
     );
     mount.observe(el);
     return () => mount.disconnect();

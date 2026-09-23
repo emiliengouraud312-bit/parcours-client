@@ -38,7 +38,7 @@ export const ABOUT: PageContent = {
       ],
       img: {
         id: 'local-atelier',
-        alt: `Le local d’E&M Vintage : portants, étagères de pièces pliées, fond blanc et mannequins pour la prise de vue.`,
+        alt: `Le local d’EM : portants, étagères de pièces pliées, fond blanc et mannequins pour la prise de vue.`,
         w: 1280,
         h: 960,
       },

@@ -1,4 +1,4 @@
-# E&M Vintage
+# EM
 
 Site vitrine en scroll narratif : hero, six chapitres (réception, lavage,
 repassage, prise de vue, mise en ligne, expédition), puis le choix de taille

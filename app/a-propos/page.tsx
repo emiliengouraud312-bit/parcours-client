@@ -4,7 +4,7 @@ import PageBody from '@/components/content/PageBody';
 import { ABOUT } from '@/content/pages';
 
 export const metadata: Metadata = {
-  title: 'À propos — E&M Vintage',
+  title: 'À propos — EM',
   description: 'Quatre ans, un local de 100 m² en Vendée, 40 000 articles remis en circulation.',
 };
 

@@ -25,7 +25,7 @@ export const LOCAL = {
 
 /**
  * Avis clients, transcrits mot pour mot depuis les captures Vinted fournies
- * par E&M — fautes et emoji compris. On ne réécrit pas un avis : c'est ce
+ * par EM — fautes et emoji compris. On ne réécrit pas un avis : c'est ce
  * qui le rend crédible.
  */
 export const REVIEWS = [

@@ -2,12 +2,11 @@ import type { Metadata, Viewport } from 'next';
 import { Archivo, DM_Sans, Instrument_Serif, League_Spartan } from 'next/font/google';
 import './globals.css';
 
-/* Archivo couvre le mot-symbole (wght 800) et les capitales espacées de
-   « VINTAGE » (wght 300) — exactement la construction du logo. Elle ne sert
-   qu'aux titres. */
+/* Archivo porte le mot-symbole et les titres, à la graisse du logo. La
+   graisse fine ne servait qu'aux capitales de « VINTAGE » : elle part avec. */
 const archivo = Archivo({
   subsets: ['latin'],
-  weight: ['300', '800'],
+  weight: ['800'],
   variable: '--font-archivo',
   display: 'swap',
 });
@@ -53,11 +52,11 @@ const SITE =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: 'E&M Vintage — Vêtements de marque, seconde main',
+  title: 'EM — Vêtements de marque, seconde main',
   description:
     'Ralph Lauren, Tommy Hilfiger, Lacoste, Patagonia, The North Face. Des pièces triées, lavées, repassées et photographiées une par une, en Vendée.',
   openGraph: {
-    title: 'E&M Vintage — Vêtements de marque, seconde main',
+    title: 'EM — Vêtements de marque, seconde main',
     description: 'Triées, lavées, repassées, photographiées une par une. En Vendée.',
     locale: 'fr_FR',
     type: 'website',

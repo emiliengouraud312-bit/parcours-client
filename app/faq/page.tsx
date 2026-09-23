@@ -4,7 +4,7 @@ import PageBody from '@/components/content/PageBody';
 import { FAQ } from '@/content/pages';
 
 export const metadata: Metadata = {
-  title: 'FAQ — E&M Vintage',
+  title: 'FAQ — EM',
   description: 'Lavage, authenticité, défauts, expédition, vente sur place : les questions qui reviennent.',
 };
 

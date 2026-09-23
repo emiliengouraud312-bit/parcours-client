@@ -233,11 +233,14 @@
   will-change: transform;
 }
 
-/* L'affiche et la vidéo sont empilées. La vidéo n'apparaît qu'une fois
-   lisible : pas de cadre noir le temps qu'elle se charge, et le fondu depuis
-   l'affiche — la même image — ne se voit pas. */
-.media__video { opacity: 0; transition: opacity 0.5s ease; }
-.media__video[data-playing] { opacity: 1; }
+/* L'affiche et la vidéo sont empilées, la vidéo par-dessus, et la vidéo
+   n'est JAMAIS masquée.
+   Safari iOS refuse de lire une vidéo qu'il juge invisible : la masquer en
+   attendant qu'elle démarre créait un blocage mutuel — cachée donc jamais
+   lue, jamais lue donc jamais révélée. Tant qu'elle n'a pas de données, un
+   <video> ne peint rien et c'est l'affiche qui apparaît au travers ; une
+   fois chargée, sa première image EST l'affiche. La bascule ne se voit pas. */
+.media__video { opacity: 1; }
 
 .media__bare {
   display: grid;

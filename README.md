@@ -56,6 +56,21 @@ des six font moins de 4 s.
 - **`prefers-reduced-motion`** rend un parcours alternatif complet (sections
   empilées, scroll natif), pas une version dégradée.
 
+## Aperçu avant déploiement
+
+```bash
+npm run preview   # -> out/, à chemins relatifs
+```
+
+`scripts/make-preview.mjs` reprend l'export statique et le rend autonome :
+chemins relatifs (les url() des CSS remontent depuis leur propre dossier),
+`_next/` renommé en `assets/` — certains hébergeurs réservent les chemins
+commençant par `_` — et le bundle `polyfills` retiré, inutile ici et
+non-UTF8. Le dossier `out/` obtenu tourne depuis n'importe quel
+sous-dossier, sans serveur.
+
+Le build de production, lui, n'est pas concerné : il garde ses chemins absolus.
+
 ## Déploiement
 
 Vercel, plan gratuit. Toutes les routes sont pré-rendues en statique.

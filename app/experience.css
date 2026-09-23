@@ -10,18 +10,24 @@
   position: fixed;
   z-index: 50;
   top: max(14px, env(safe-area-inset-top));
-  opacity: 0;
-  pointer-events: none;
   transition: opacity 0.5s var(--e-out);
 }
 
+/* Le mot-symbole en haut à gauche n'apparaît qu'une fois le hero passé :
+   sur le premier écran, il ferait doublon avec le grand logo. */
+.masthead { opacity: 0; pointer-events: none; }
+
 :root[data-chrome='on'] .masthead,
-:root[data-chrome='on'] .menu-btn,
-:root[data-static] .masthead,
-:root[data-static] .menu-btn {
+:root[data-static] .masthead {
   opacity: 1;
   pointer-events: auto;
 }
+
+/* Le menu, lui, reste joignable dès le départ. Discret ne veut pas dire
+   introuvable : sans lui, aucune navigation n'existe sur le premier écran.
+   Il se pose simplement après l'intro, pour ne pas la couper. */
+.menu-btn { opacity: 0; animation: fade-in 0.7s ease 2.1s forwards; }
+:root[data-static] .menu-btn { opacity: 1; animation: none; }
 
 .masthead { left: var(--gutter); }
 .masthead__mark { display: flex; flex-direction: column; line-height: 1; }
@@ -36,7 +42,7 @@
   margin-top: 2px;
 }
 
-.menu-btn { right: var(--gutter); padding: 6px 2px; opacity: 0; }
+.menu-btn { right: var(--gutter); padding: 6px 2px; }
 .menu-btn::after {
   content: '';
   display: block;

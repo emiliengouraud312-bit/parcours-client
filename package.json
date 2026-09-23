@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "media": "node scripts/build-media.mjs",
-    "icons": "node scripts/build-icons.mjs"
+    "icons": "node scripts/build-icons.mjs",
+    "preview": "PREVIEW_EXPORT=1 next build && node scripts/make-preview.mjs"
   },
   "dependencies": {
     "gsap": "^3.13.0",

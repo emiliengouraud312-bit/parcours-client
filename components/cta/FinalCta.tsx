@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { VINTED, WOMEN_URL } from '@/lib/vinted';
+import VintedLink from './VintedLink';
 
 /**
  * Le CTA n'utilise ni GSAP ni Lenis : c'est la seule raison d'être du site,
@@ -48,17 +49,17 @@ export default function FinalCta() {
             aucun des deux ne doit jamais passer devant l'autre. */}
         <div className="final__choice">
           {[VINTED.menSmall, VINTED.menLarge].map((acc) => (
-            <a key={acc.handle} className="size-btn" href={acc.url} target="_blank" rel="noopener noreferrer">
+            <VintedLink key={acc.handle} className="size-btn" href={acc.url}>
               <span className="size-btn__size u-display">{acc.sizes}</span>
               <span className="size-btn__handle u-eyebrow">{acc.handle}</span>
-            </a>
+            </VintedLink>
           ))}
         </div>
 
         <p className="final__women">
-          <a href={WOMEN_URL} target="_blank" rel="noopener noreferrer">
+          <VintedLink href={WOMEN_URL}>
             quelques pièces femme disponibles <span aria-hidden="true">→</span>
-          </a>
+          </VintedLink>
         </p>
       </div>
     </section>

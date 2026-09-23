@@ -26,21 +26,12 @@
 /* Le menu, lui, reste joignable dès le départ. Discret ne veut pas dire
    introuvable : sans lui, aucune navigation n'existe sur le premier écran.
    Il se pose simplement après l'intro, pour ne pas la couper. */
-.menu-btn { opacity: 0; animation: fade-in 0.7s ease 2.1s forwards; }
+.menu-btn { opacity: 0; animation: fade-in 0.7s ease 1.8s forwards; }
 :root[data-static] .menu-btn { opacity: 1; animation: none; }
 
 .masthead { left: var(--gutter); }
 .masthead__mark { display: flex; flex-direction: column; line-height: 1; }
 .masthead__em { font-family: var(--font-archivo), sans-serif; font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
-.masthead__vintage {
-  font-size: 7px;
-  font-weight: 300;
-  letter-spacing: 0.34em;
-  text-indent: 0.34em;
-  text-transform: uppercase;
-  opacity: 0.66;
-  margin-top: 2px;
-}
 
 .menu-btn {
   right: calc(var(--gutter) - 10px);
@@ -133,18 +124,6 @@
   animation: mark-open 0.72s var(--e-out) 0.1s forwards;
 }
 
-.mark__vintage {
-  font-family: var(--font-archivo), sans-serif;
-  margin-top: clamp(10px, 3vw, 18px);
-  font-size: clamp(0.66rem, 3.2vw, 1rem);
-  font-weight: 300;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  text-indent: 0.06em;
-  opacity: 0;
-  animation: vintage-open 0.9s var(--e-out) 0.62s forwards;
-}
-
 .hero__rule {
   display: block;
   width: min(62vw, 300px);
@@ -153,13 +132,13 @@
   background: currentColor;
   opacity: 0.28;
   transform: scaleX(0);
-  animation: rule-open 0.9s var(--e-out) 1s forwards;
+  animation: rule-open 0.9s var(--e-out) 0.72s forwards;
 }
 
 .hero__baseline {
   font-size: clamp(1.05rem, 4.8vw, 1.5rem);
   opacity: 0;
-  animation: rise 0.8s var(--e-out) 1.32s forwards;
+  animation: rise 0.8s var(--e-out) 1s forwards;
 }
 
 .hero__brands {
@@ -175,7 +154,7 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   opacity: 0;
-  animation: fade-in 0.9s ease 1.72s forwards;
+  animation: fade-in 0.9s ease 1.35s forwards;
 }
 .hero__brands li { opacity: 0.58; }
 
@@ -189,13 +168,12 @@
   align-items: center;
   gap: 9px;
   opacity: 0;
-  animation: fade-in 0.8s ease 1.9s forwards;
+  animation: fade-in 0.8s ease 1.6s forwards;
 }
 .hero__hint-label { font-size: 9px; opacity: 0.5; }
 .hero__hint-line { width: 1px; height: 30px; background: currentColor; opacity: 0.3; transform-origin: top; animation: hint 2.4s ease-in-out 2.4s infinite; }
 
 @keyframes mark-open   { to { clip-path: inset(0 0 0 0); } }
-@keyframes vintage-open{ to { opacity: 1; letter-spacing: 0.34em; text-indent: 0.34em; } }
 @keyframes rule-open   { to { transform: scaleX(1); } }
 @keyframes rise        { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @keyframes fade-in     { to { opacity: 1; } }
@@ -614,7 +592,6 @@
   .chapter { height: 150svh; }
   .chapter__caption { padding-bottom: clamp(70px, 14svh, 140px); }
   .masthead__em { font-size: 20px; }
-  .masthead__vintage { font-size: 8px; }
   .rail { right: 26px; }
   .foot { padding: 34px var(--gutter); }
 }
@@ -625,7 +602,6 @@
 :root[data-static] .chapter { height: auto; }
 :root[data-static] .chapter__sticky { position: relative; height: auto; min-height: 88svh; }
 :root[data-static] .mark__em { clip-path: none; animation: none; }
-:root[data-static] .mark__vintage { opacity: 1; letter-spacing: 0.34em; text-indent: 0.34em; animation: none; }
 :root[data-static] .hero__rule { transform: none; animation: none; }
 :root[data-static] .hero__baseline { opacity: 1; animation: none; }
 :root[data-static] .hero__brands {
@@ -649,7 +625,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .mark__em { clip-path: none; animation: none; }
-  .mark__vintage { opacity: 1; letter-spacing: 0.34em; text-indent: 0.34em; animation: none; }
   .hero__rule { transform: none; animation: none; }
   .hero__baseline { opacity: 1; animation: none; }
   .hero__brands {

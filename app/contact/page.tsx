@@ -4,7 +4,7 @@ import PageBody from '@/components/content/PageBody';
 import { CONTACT } from '@/content/pages';
 
 export const metadata: Metadata = {
-  title: 'Contact — E&M Vintage',
+  title: 'Contact — EM',
   description: 'Nous écrire sur Vinted, ou venir sur place à Saint-Georges-de-Montaigu.',
 };
 

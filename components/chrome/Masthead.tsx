@@ -2,9 +2,8 @@
 export default function Masthead() {
   return (
     <header className="masthead" data-masthead>
-      <a className="masthead__mark" href="#top" aria-label="E&amp;M Vintage — retour en haut">
-        <span className="masthead__em">E&amp;M</span>
-        <span className="masthead__vintage">Vintage</span>
+      <a className="masthead__mark" href="#top" aria-label="EM — retour en haut">
+        <span className="masthead__em">EM</span>
       </a>
     </header>
   );

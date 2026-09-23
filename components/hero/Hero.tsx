@@ -9,8 +9,7 @@ export default function Hero() {
     <section className="hero" data-hero>
       <div className="hero__inner">
         <h1 className="mark" data-hero-mark>
-          <span className="mark__em">E&amp;M</span>
-          <span className="mark__vintage">Vintage</span>
+          <span className="mark__em">EM</span>
         </h1>
 
         <span className="hero__rule" aria-hidden="true" />

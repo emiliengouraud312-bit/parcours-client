@@ -2,7 +2,7 @@ import { REVIEWS, STATS } from '@/content/site';
 
 /**
  * Preuve sociale, volontairement compacte : elle ne doit pas retarder le
- * choix de taille. Chiffres fournis par E&M, avis transcrits mot pour mot
+ * choix de taille. Chiffres fournis par EM, avis transcrits mot pour mot
  * depuis Vinted.
  */
 export default function Proof() {

@@ -1,71 +1,142 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
 import type { Chapter } from './chapters.data';
 
 const W = [640, 960, 1280];
 
+/** Économiseur de données : on garde les affiches, on ne charge aucune vidéo. */
+const saveData = () =>
+  typeof navigator !== 'undefined' &&
+  (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
+
+const reduced = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 /**
- * Trois états, par ordre de préférence : vidéo (WebM + MP4 pour iOS), photo
- * (AVIF + WebP), ou panneau de matière. Le média est décoratif — le titre et
- * la ligne du chapitre disent déjà tout — d'où l'`aria-hidden`.
+ * Le média d'un chapitre : une affiche, et par-dessus une vidéo qui ne se
+ * monte qu'à l'approche.
  *
- * L'affiche n'utilise pas l'attribut `poster` du <video> : Chrome le
- * télécharge dès le chargement de la page, même en `preload="none"`, ce qui
- * faisait arriver les six affiches d'un coup. Une <img loading="lazy">
- * derrière la vidéo n'est cherchée qu'à l'approche du chapitre.
+ * La vidéo porte l'attribut `autoplay` et n'est montée qu'au bon moment,
+ * plutôt que d'exister depuis le début et d'être lancée en JavaScript. Sur
+ * iOS — donc aussi dans Chrome iPhone, qui utilise le moteur de Safari — la
+ * lecture automatique native est le chemin le plus fiable : un `play()`
+ * appelé à la main est refusé bien plus souvent. Ne monter la vidéo qu'à
+ * l'approche garde le chargement paresseux malgré `autoplay`.
  *
- * L'affiche est la première image exacte du clip, donc le passage à la
- * lecture est un simple fondu. Et si la lecture n'arrive jamais (mouvement
- * réduit, mode économie d'énergie iOS, données économisées), elle reste
- * affichée comme une photo.
+ * L'affiche est la première image exacte du clip et reste derrière : si la
+ * lecture ne démarre jamais, on voit une photo, jamais un trou.
  */
 export default function ChapterMedia({ chapter }: { chapter: Chapter }) {
   const { id, hasVideo, hasStill, title } = chapter;
+  const ref = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [mounted, setMounted] = useState(false);
   const src = (ext: string, w: number) => `/media/img/${id}-${w}.${ext}`;
 
-  return (
-    <figure className="media" data-media aria-hidden="true">
-      {hasVideo ? (
-        <>
-          <picture>
-            <source type="image/avif" srcSet={`/media/img/${id}-poster.avif`} />
-            <img
-              className="media__el media__poster"
-              src={`/media/img/${id}-poster.webp`}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              width={640}
-              height={1138}
-            />
-          </picture>
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !hasVideo || saveData() || reduced()) return;
 
-          <video
-            className="media__el media__video"
-            data-media-video
-            muted
-            loop
-            playsInline
-            preload="none"
-            tabIndex={-1}
-            disablePictureInPicture
-          >
-            {/* Le codec est précisé sur le WebM pour que Safari le refuse
-                franchement au lieu de l'accepter puis de caler faute de
-                décodage VP9. Le MP4, lui, reste déclaré au plus large : on
-                veut qu'il soit accepté partout. */}
-            <source src={`/media/video/${id}.webm`} type={'video/webm; codecs="vp9"'} />
-            <source src={`/media/video/${id}.mp4`} type="video/mp4" />
-          </video>
-        </>
-      ) : hasStill ? (
+    // Monte la vidéo un écran à l'avance : elle a le temps de se charger,
+    // et les chapitres lointains ne coûtent rien.
+    const mount = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        setMounted(true);
+        mount.disconnect();
+      },
+      { rootMargin: '100% 0px' },
+    );
+    mount.observe(el);
+    return () => mount.disconnect();
+  }, [hasVideo]);
+
+  useEffect(() => {
+    const el = ref.current;
+    const v = videoRef.current;
+    if (!el || !v) return;
+
+    // Hors écran, on met en pause ; de retour, on relance. Le tout premier
+    // démarrage, lui, est laissé à `autoplay`.
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) void v.play().catch(() => {});
+          else v.pause();
+        }),
+      { rootMargin: '10% 0px' },
+    );
+    io.observe(el);
+
+    const onHide = () => document.hidden && v.pause();
+    document.addEventListener('visibilitychange', onHide);
+
+    // Filet : un geste lève toutes les restrictions de lecture restantes
+    // (mode économie d'énergie notamment).
+    const kick = () => {
+      if (v.paused && v.getBoundingClientRect().top < window.innerHeight) void v.play().catch(() => {});
+    };
+    document.addEventListener('touchend', kick, { passive: true });
+    document.addEventListener('pointerup', kick, { passive: true });
+
+    return () => {
+      io.disconnect();
+      document.removeEventListener('visibilitychange', onHide);
+      document.removeEventListener('touchend', kick);
+      document.removeEventListener('pointerup', kick);
+    };
+  }, [mounted]);
+
+  return (
+    <figure className="media" data-media aria-hidden="true" ref={ref}>
+      {hasStill || hasVideo ? (
         <picture>
-          <source type="image/avif" sizes="100vw" srcSet={W.map((w) => `${src('avif', w)} ${w}w`).join(', ')} />
-          <source type="image/webp" sizes="100vw" srcSet={W.map((w) => `${src('webp', w)} ${w}w`).join(', ')} />
-          <img className="media__el" src={src('webp', 960)} alt="" loading="lazy" decoding="async" width={960} height={1707} />
+          <source
+            type="image/avif"
+            sizes="100vw"
+            srcSet={
+              hasVideo
+                ? `/media/img/${id}-poster.avif`
+                : W.map((w) => `${src('avif', w)} ${w}w`).join(', ')
+            }
+          />
+          <img
+            className="media__el media__poster"
+            src={hasVideo ? `/media/img/${id}-poster.webp` : src('webp', 960)}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            width={hasVideo ? 640 : 960}
+            height={hasVideo ? 1138 : 1707}
+          />
         </picture>
       ) : (
         <div className="media__bare">
           <span className="media__bare-n">{chapter.n}</span>
         </div>
+      )}
+
+      {hasVideo && mounted && (
+        <video
+          ref={videoRef}
+          className="media__el media__video"
+          data-media-video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          tabIndex={-1}
+          disablePictureInPicture
+          aria-label={title}
+        >
+          {/* Le codec est précisé sur le WebM pour que Safari le refuse
+              franchement au lieu de l'accepter puis de caler faute de
+              décodage VP9. Le MP4, lui, reste déclaré au plus large. */}
+          <source src={`/media/video/${id}.webm`} type={'video/webm; codecs="vp9"'} />
+          <source src={`/media/video/${id}.mp4`} type="video/mp4" />
+        </video>
       )}
 
       <span className="media__vignette" />

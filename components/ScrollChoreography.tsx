@@ -8,16 +8,6 @@ import { CHAPTERS } from '@/components/chapters/chapters.data';
 const HERO_TONE = '#1a1a1a';
 const HERO_FG = '#f1efe7';
 
-/* Le chapitre 1 n'est pas préchauffé : son propre déclencheur se trouve à
-   quelques pixels de celui du hero, et le doubler faisait télécharger le clip
-   deux fois. Son affiche — la première image exacte du plan — couvre le
-   démarrage. Les cinq suivants sont préparés par le chapitre précédent. */
-
-/** Économiseur de données : on garde les affiches, on ne charge aucune vidéo. */
-const saveData = () =>
-  typeof navigator !== 'undefined' &&
-  (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
-
 /**
  * Toute la chorégraphie est ici plutôt qu'éparpillée dans les composants :
  * l'arc de luminosité traverse les sections, il a besoin de les voir ensemble.
@@ -58,21 +48,6 @@ export default function ScrollChoreography() {
     );
     reveals.forEach((el) => sectionIo.observe(el));
 
-    const lite = saveData();
-    const videos: HTMLVideoElement[] = [];
-    /** Le clip du chapitre à l'écran, pour pouvoir le relancer au besoin. */
-    let active: HTMLVideoElement | null = null;
-
-    /** Précharge un clip sans le lire : le chapitre suivant démarre sans
-     *  attente. `load()` n'est appelé que sur un élément encore vierge —
-     *  sur une vidéo déjà en cours, il repartirait de zéro et relancerait
-     *  tout le téléchargement. */
-    const warm = (v?: HTMLVideoElement) => {
-      if (!v || lite || v.dataset.warm) return;
-      v.dataset.warm = '1';
-      v.preload = 'auto';
-      if (v.readyState === 0) v.load();
-    };
 
     const ctx = gsap.context(() => {
       /* ---- Hero : sortie, et relais vers le masthead ------------------ */
@@ -188,34 +163,6 @@ export default function ScrollChoreography() {
           });
         }
 
-        /* ---- Vidéo : chargée et lue seulement dans le viewport --------- */
-        const video = section.querySelector<HTMLVideoElement>('[data-media-video]');
-        if (video) {
-          videos[i] = video;
-          ScrollTrigger.create({
-            trigger: section,
-            // Pas 'top bottom' : le chapitre 1 commence exactement au bas du
-            // premier écran, il serait donc actif dès le chargement et
-            // tournerait derrière le hero. On attend qu'il approche vraiment.
-            start: 'top 88%',
-            end: 'bottom 12%',
-            onToggle: (self) => {
-              if (!self.isActive) {
-                if (active === video) active = null;
-                return video.pause();
-              }
-              active = video;
-              // La lecture déclenche elle-même le chargement, mais iOS
-              // démarre plus volontiers sur un élément déjà en préchargement.
-              video.dataset.warm = '1';
-              video.preload = 'auto';
-              // Un refus de lecture (mode économie d'énergie iOS) laisse
-              // simplement l'affiche : une vraie image du plan, pas un trou.
-              if (!lite) void video.play().catch(() => {});
-              warm(videos[i + 1]); // le chapitre suivant se prépare pendant celui-ci
-            },
-          });
-        }
       });
 
       /* ---- Rail de progression ---------------------------------------
@@ -256,29 +203,11 @@ export default function ScrollChoreography() {
       }
     });
 
-    // Filet de sécurité : si le navigateur a refusé le démarrage automatique
-    // (mode économie d'énergie iOS, réglage d'économie de données), le premier
-    // contact de l'utilisateur relance le clip visible. Un geste lève toutes
-    // les restrictions de lecture.
-    const kick = () => {
-      if (active?.paused && !lite) void active.play().catch(() => {});
-    };
-    document.addEventListener('touchend', kick, { passive: true });
-    document.addEventListener('pointerup', kick, { passive: true });
-
-    // Onglet en arrière-plan : rien ne doit continuer à tourner.
-    const onVisibility = () => {
-      if (document.hidden) videos.forEach((v) => v?.pause());
-    };
-    document.addEventListener('visibilitychange', onVisibility);
 
     // Les polices changent les hauteurs de texte : on recalcule une fois posées.
     void document.fonts?.ready.then(() => ScrollTrigger.refresh());
 
     return () => {
-      document.removeEventListener('touchend', kick);
-      document.removeEventListener('pointerup', kick);
-      document.removeEventListener('visibilitychange', onVisibility);
       sectionIo.disconnect();
       delete root.dataset.animReady;
       root.removeAttribute('data-chapters');

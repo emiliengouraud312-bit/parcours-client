@@ -39,7 +39,17 @@ const spartan = League_Spartan({
   preload: false,
 });
 
-const SITE = 'https://em-vintage.vercel.app';
+/**
+ * L'adresse du site en production. Vercel fournit le domaine du projet au
+ * build, donc l'aperçu de partage (WhatsApp, SMS, réseaux) pointe au bon
+ * endroit quel que soit le nom choisi. `NEXT_PUBLIC_SITE_URL` permet de
+ * forcer un domaine personnalisé le jour où il y en a un.
+ */
+const SITE =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'https://em-vintage.vercel.app');
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),

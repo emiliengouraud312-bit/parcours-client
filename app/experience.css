@@ -186,11 +186,19 @@
 .media { position: absolute; inset: 0; margin: 0; overflow: hidden; }
 
 .media__el {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   will-change: transform;
 }
+
+/* L'affiche et la vidéo sont empilées. La vidéo n'apparaît qu'une fois
+   lisible : pas de cadre noir le temps qu'elle se charge, et le fondu depuis
+   l'affiche — la même image — ne se voit pas. */
+.media__video { opacity: 0; transition: opacity 0.5s ease; }
+.media__video[data-playing] { opacity: 1; }
 
 .media__bare {
   display: grid;
@@ -206,6 +214,29 @@
   font-weight: 800;
   line-height: 0.8;
   opacity: 0.05;
+}
+
+/* Vignette teintée au ton du chapitre : elle donne de la profondeur sans
+   assombrir — sur le studio crème, elle éclaircit les bords au lieu de les
+   noircir. */
+.media__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 78% 62% at 50% 42%,
+    transparent 40%,
+    color-mix(in srgb, var(--tone) 30%, transparent) 78%,
+    color-mix(in srgb, var(--tone) 52%, transparent) 100%
+  );
+}
+
+/* Voile d'arrivée. Valeur au repos : transparent. C'est GSAP qui le monte à
+   1 puis le redescend au scroll — sans JS, le média reste visible. */
+.media__veil {
+  position: absolute;
+  inset: 0;
+  background: var(--tone);
+  opacity: 0;
 }
 
 .media__scrim {

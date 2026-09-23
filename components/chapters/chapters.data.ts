@@ -7,7 +7,9 @@ export type Chapter = {
   /** Arc de luminosité : le site s'éclaircit jusqu'au studio, puis redescend. */
   tone: string;
   fg: string;
-  /** Média disponible. Chaque chapitre dégrade proprement s'il manque. */
+  /** Média disponible. Chaque chapitre dégrade proprement s'il manque :
+   *  vidéo -> photo -> panneau de matière. Passer `hasVideo` à false
+   *  suffit à repasser un chapitre sur sa photo. */
   hasVideo: boolean;
   hasStill: boolean;
 };
@@ -20,7 +22,7 @@ export const CHAPTERS: Chapter[] = [
     line: 'Un ballot : 25 kg, environ 200 pièces.',
     tone: '#1a1a1a',
     fg: '#f1efe7',
-    hasVideo: false,
+    hasVideo: true,
     hasStill: true,
   },
   {
@@ -30,7 +32,7 @@ export const CHAPTERS: Chapter[] = [
     line: 'Tout passe en machine. Pièce à part, dans la grange.',
     tone: '#222222',
     fg: '#f1efe7',
-    hasVideo: false,
+    hasVideo: true,
     hasStill: false,
   },
   {
@@ -40,7 +42,7 @@ export const CHAPTERS: Chapter[] = [
     line: 'Défroissé à la vapeur, une pièce à la fois.',
     tone: '#2e2e2c',
     fg: '#f1efe7',
-    hasVideo: false,
+    hasVideo: true,
     hasStill: true,
   },
   {
@@ -50,7 +52,7 @@ export const CHAPTERS: Chapter[] = [
     line: 'Fond blanc, mannequin, lumière continue.',
     tone: '#f1efe7',
     fg: '#2b2b2b',
-    hasVideo: false,
+    hasVideo: true,
     hasStill: true,
   },
   {
@@ -60,7 +62,7 @@ export const CHAPTERS: Chapter[] = [
     line: 'Mesures, description, prix.',
     tone: '#e3e0d6',
     fg: '#2b2b2b',
-    hasVideo: false,
+    hasVideo: true,
     hasStill: true,
   },
   {
@@ -70,7 +72,7 @@ export const CHAPTERS: Chapter[] = [
     line: 'Pesé, emballé, déposé au point relais.',
     tone: '#2b2b2b',
     fg: '#f1efe7',
-    hasVideo: false,
+    hasVideo: true,
     hasStill: true,
   },
 ];

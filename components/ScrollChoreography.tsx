@@ -8,9 +8,21 @@ import { CHAPTERS } from '@/components/chapters/chapters.data';
 const HERO_TONE = '#1a1a1a';
 const HERO_FG = '#f1efe7';
 
+/* Le chapitre 1 n'est pas préchauffé : son propre déclencheur se trouve à
+   quelques pixels de celui du hero, et le doubler faisait télécharger le clip
+   deux fois. Son affiche — la première image exacte du plan — couvre le
+   démarrage. Les cinq suivants sont préparés par le chapitre précédent. */
+
+/** Économiseur de données : on garde les affiches, on ne charge aucune vidéo. */
+const saveData = () =>
+  typeof navigator !== 'undefined' &&
+  (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
+
 /**
  * Toute la chorégraphie est ici plutôt qu'éparpillée dans les composants :
  * l'arc de luminosité traverse les sections, il a besoin de les voir ensemble.
+ *
+ * Le CTA final est délibérément absent : il s'anime seul, sans GSAP.
  */
 export default function ScrollChoreography() {
   useEffect(() => {
@@ -20,12 +32,27 @@ export default function ScrollChoreography() {
       root.style.setProperty('--fg-now', fg);
     };
 
-    // Parcours alternatif : pas de dégradé, pas de pin, tout est déjà en place.
+    // Parcours alternatif : pas de dégradé, pas de sticky, aucune lecture.
+    // Les affiches des clips restent affichées comme des photos.
     if (prefersReducedMotion()) {
       root.dataset.static = 'true';
       setTone(HERO_TONE, HERO_FG);
       return;
     }
+
+    const lite = saveData();
+    const videos: HTMLVideoElement[] = [];
+
+    /** Précharge un clip sans le lire : le chapitre suivant démarre sans
+     *  attente. `load()` n'est appelé que sur un élément encore vierge —
+     *  sur une vidéo déjà en cours, il repartirait de zéro et relancerait
+     *  tout le téléchargement. */
+    const warm = (v?: HTMLVideoElement) => {
+      if (!v || lite || v.dataset.warm) return;
+      v.dataset.warm = '1';
+      v.preload = 'auto';
+      if (v.readyState === 0) v.load();
+    };
 
     const ctx = gsap.context(() => {
       /* ---- Hero : sortie, et relais vers le masthead ------------------ */
@@ -41,7 +68,7 @@ export default function ScrollChoreography() {
 
         ScrollTrigger.create({
           trigger: hero,
-          start: 'bottom 80%',
+          start: 'bottom 90%',
           onEnter: () => root.setAttribute('data-chrome', 'on'),
           onLeaveBack: () => root.removeAttribute('data-chrome'),
         });
@@ -66,9 +93,30 @@ export default function ScrollChoreography() {
           onUpdate: (self) => setTone(lerpBg(self.progress), lerpFg(self.progress)),
         });
 
-        /* ---- Média : parallaxe et respiration, scrubbées --------------- */
-        const media = section.querySelector('[data-media] .media__el, [data-media] .media__bare');
-        if (media) {
+        /* ---- Entrée : le chapitre arrive en aplat, puis se révèle -------
+           Le voile est à la couleur du chapitre, donc au moment où la
+           jointure avec le chapitre précédent est visible, il n'y a qu'un
+           aplat à l'écran. Deux images ne se touchent jamais. */
+        const veil = section.querySelector('[data-media-veil]');
+        if (veil) {
+          gsap.fromTo(
+            veil,
+            { opacity: 1 },
+            {
+              opacity: 0,
+              ease: 'none',
+              scrollTrigger: { trigger: section, start: 'top 88%', end: 'top 16%', scrub: true },
+            },
+          );
+        }
+
+        /* ---- Média : parallaxe et respiration, scrubbées ---------------
+           L'affiche et la vidéo bougent ensemble, sinon le fondu de l'une
+           vers l'autre laisserait voir un décalage. */
+        const media = gsap.utils.toArray<Element>(
+          section.querySelectorAll('[data-media] .media__el, [data-media] .media__bare'),
+        );
+        if (media.length) {
           gsap.fromTo(
             media,
             { scale: 1.09, yPercent: -3.5 },
@@ -104,28 +152,41 @@ export default function ScrollChoreography() {
             .from(section.querySelector('[data-anim="line"]'), { opacity: 0, y: 16, duration: 0.6, ease: EASE.out }, '-=0.5');
         }
 
-        /* ---- Sortie : fondu vers le ton du chapitre --------------------
-           Le sticky se décroche et remonte ; on vide son média avant que
-           la jointure avec le chapitre suivant ne devienne visible. */
-        const stickyMedia = section.querySelector('[data-media]');
-        if (stickyMedia) {
-          gsap.to([stickyMedia, caption].filter(Boolean) as Element[], {
+        /* ---- Sortie ----------------------------------------------------
+           C'est le bloc entier qui s'efface, fond compris — pas seulement son
+           média. Sinon le fond du chapitre sortant laisse un liseré de sa
+           couleur en haut du suivant, très visible quand on passe du crème
+           à l'anthracite. Ce qui apparaît dessous est le fond de page, déjà
+           interpolé vers le ton du chapitre qui arrive : invisible. */
+        const sticky = section.querySelector('.chapter__sticky');
+        if (sticky) {
+          gsap.to(sticky, {
             opacity: 0,
             ease: 'none',
-            scrollTrigger: { trigger: section, start: 'bottom 96%', end: 'bottom 52%', scrub: true },
+            scrollTrigger: { trigger: section, start: 'bottom 96%', end: 'bottom 50%', scrub: true },
           });
         }
 
-        /* ---- Vidéo : on ne charge et ne joue que dans le viewport ------ */
+        /* ---- Vidéo : chargée et lue seulement dans le viewport --------- */
         const video = section.querySelector<HTMLVideoElement>('[data-media-video]');
         if (video) {
+          videos[i] = video;
           ScrollTrigger.create({
             trigger: section,
-            start: 'top bottom',
-            end: 'bottom top',
+            // Pas 'top bottom' : le chapitre 1 commence exactement au bas du
+            // premier écran, il serait donc actif dès le chargement et
+            // tournerait derrière le hero. On attend qu'il approche vraiment.
+            start: 'top 88%',
+            end: 'bottom 12%',
             onToggle: (self) => {
-              if (self.isActive) void video.play().catch(() => {});
-              else video.pause();
+              if (!self.isActive) return video.pause();
+              // La lecture déclenche elle-même le chargement : pas de load() ici.
+              video.dataset.warm = '1';
+              // Un refus de lecture (mode économie d'énergie iOS) laisse
+              // simplement l'affiche : une vraie image du plan, pas un trou.
+              if (!lite) void video.play().catch(() => {});
+              video.addEventListener('playing', () => video.setAttribute('data-playing', ''), { once: true });
+              warm(videos[i + 1]); // le chapitre suivant se prépare pendant celui-ci
             },
           });
         }
@@ -152,15 +213,21 @@ export default function ScrollChoreography() {
           },
         });
       }
-
-      /* Le CTA final s'anime seul (IntersectionObserver + CSS) : il ne doit
-         dépendre ni de GSAP ni de Lenis. Voir components/cta/FinalCta.tsx. */
     });
+
+    // Onglet en arrière-plan : rien ne doit continuer à tourner.
+    const onVisibility = () => {
+      if (document.hidden) videos.forEach((v) => v?.pause());
+    };
+    document.addEventListener('visibilitychange', onVisibility);
 
     // Les polices changent les hauteurs de texte : on recalcule une fois posées.
     void document.fonts?.ready.then(() => ScrollTrigger.refresh());
 
-    return () => ctx.revert();
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      ctx.revert();
+    };
   }, []);
 
   return null;

@@ -22,10 +22,28 @@ npm run media    # assets/source/*.jpg + assets/video-raw/*.mp4 -> public/media/
 npm run icons    # favicon, icône d'app et image de partage, depuis le logo
 ```
 
-Pour ajouter les vidéos : déposer les rushes dans `assets/video-raw/` en les
-nommant par numéro de chapitre (`01-*.mp4` … `06-*.mp4`), lancer `npm run media`,
-puis passer `hasVideo: true` sur le chapitre concerné dans
-`components/chapters/chapters.data.ts`.
+`npm run media -- video` ne refait que les vidéos, `-- img` que les images.
+
+Pour remplacer un plan : déposer le rush dans `assets/video-raw/` en gardant un
+nom qui commence par le numéro du chapitre (`03_…mp4`), puis relancer
+`npm run media -- video`. Pour repasser un chapitre sur sa photo, il suffit de
+mettre `hasVideo: false` dans `components/chapters/chapters.data.ts`.
+
+### Traitement des vidéos
+
+Les rushes arrivent en 1080×1920 / 24 fps et durent de 1,8 s à 8 s. Le script
+les ramène à 640×1138, ce qui est amplement suffisant pour de l'ambiance de
+fond sous un voile et un grain, et divise le poids par deux.
+
+Aucun rush ne boucle proprement, donc chaque clip est rendu bouclable :
+
+- **`xfade`** fond la fin du clip sur son début. Le geste garde son sens — on
+  ne voit jamais un colis se dés-emballer.
+- **`pingpong`** rejoue le clip à l'envers. Réservé au va-et-vient (le pouce
+  qui fait défiler) et aux rushes trop courts pour un fondu.
+
+Les durées demandées sont toujours ramenées à ce que le rush contient : deux
+des six font moins de 4 s.
 
 ## Parti pris techniques
 

@@ -21,7 +21,13 @@ export default function SmoothScroll() {
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
 
+    // Le menu demande la mise en pause quand il s'ouvre : sinon Lenis
+    // continue de capter la molette et le panneau ne défile pas.
+    const onLock = (e: Event) => ((e as CustomEvent<boolean>).detail ? lenis.stop() : lenis.start());
+    window.addEventListener('em:scroll-lock', onLock as EventListener);
+
     return () => {
+      window.removeEventListener('em:scroll-lock', onLock as EventListener);
       gsap.ticker.remove(raf);
       lenis.destroy();
     };

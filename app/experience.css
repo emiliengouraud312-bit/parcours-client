@@ -531,8 +531,12 @@
   z-index: 100;
   background: var(--ink-deep);
   color: var(--bone);
-  display: flex;
-  flex-direction: column;
+  /* C'est l'écran entier qui défile, pas un enfant : un conteneur de
+     défilement imbriqué se fait intercepter par le smooth scroll — au
+     lieu du panneau, c'est la page derrière qui bougeait. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   clip-path: inset(0 0 100% 0);
   visibility: hidden;
   transition: clip-path 0.62s var(--e-out), visibility 0s linear 0.62s;
@@ -541,6 +545,10 @@
 
 /* Le panneau porte le contenu : on ne quitte jamais la page. */
 .menu__bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--ink-deep);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -558,11 +566,9 @@
 
 /* Le choix des pages : trois grands liens, comme avant. */
 .menu__nav {
-  flex: 1;
-  min-height: 0;
   display: grid;
   place-items: center;
-  overflow-y: auto;
+  min-height: 72svh;
 }
 .menu__nav ul {
   list-style: none;
@@ -581,16 +587,6 @@
   .menu__nav button:hover { opacity: 0.55; }
 }
 
-/* `min-height: 0` est indispensable : sans lui, un enfant flex garde la
-   hauteur de son contenu, déborde du conteneur fixe et ne défile jamais.
-   C'est ce qui rendait les pages illisibles. */
-.menu__panel {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
 .menu__content {
   width: 100%;
   max-width: 680px;

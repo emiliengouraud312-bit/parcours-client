@@ -46,9 +46,13 @@ export default function Menu() {
     document.addEventListener('keydown', onKey);
     const { overflow } = document.body.style;
     document.body.style.overflow = 'hidden';
+    // Le smooth scroll est mis en pause tant que le panneau est ouvert :
+    // l'attribut ne suffit pas si l'instance tourne toujours derrière.
+    window.dispatchEvent(new CustomEvent('em:scroll-lock', { detail: true }));
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = overflow;
+      window.dispatchEvent(new CustomEvent('em:scroll-lock', { detail: false }));
     };
   }, [open, slug]);
 
@@ -79,7 +83,16 @@ export default function Menu() {
         <span className="menu-btn__label u-eyebrow">Menu</span>
       </button>
 
-      <div id="menu-overlay" className="menu" data-open={open || undefined} aria-hidden={!open}>
+      {/* `data-lenis-prevent` : sans lui, le smooth scroll capte la molette
+          sur tout le document et c'est la page derrière qui défile. */}
+      <div
+        id="menu-overlay"
+        className="menu"
+        data-lenis-prevent
+        ref={panelRef}
+        data-open={open || undefined}
+        aria-hidden={!open}
+      >
         <div className="menu__bar">
           {slug ? (
             <button type="button" className="menu__back u-eyebrow" tabIndex={open ? 0 : -1} onClick={() => setSlug(null)}>
@@ -95,7 +108,7 @@ export default function Menu() {
         </div>
 
         {page ? (
-          <div className="menu__panel" ref={panelRef}>
+          <div className="menu__panel">
             <div className="menu__content">
               <h2 className="page__title">{page.title}</h2>
               <p className="page__intro">{page.intro}</p>
